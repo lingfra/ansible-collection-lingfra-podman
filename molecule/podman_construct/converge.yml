@@ -1,0 +1,149 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: "Import role lingfra.podman.podman_construct"
+      ansible.builtin.import_role:
+        name: lingfra.podman.podman_construct
+
+  vars:
+    podman_construct_list:
+      # This configuration installs the forgejo container with PostgreSQL as
+      # database. A network is automatically created to enable a connection
+      # between the containers. The value of service.name will be the hostname
+      # of the container.
+      #
+      # The resulting services will be forgejo-db.service and
+      # forgejo-server.service.
+      - name: forgejo
+
+        secrets:
+          postgres-password: Secr3t!
+
+        services:
+          - name: server
+            image: codeberg.org/forgejo/forgejo:9
+            env:
+              FORGEJO__database__DB_TYPE: postgres
+              FORGEJO__database__HOST: db:5432
+              FORGEJO__database__NAME: forgejo
+              FORGEJO__database__USER: forgejo
+            depends_on:
+              - db
+            publish:
+              - "3000:3000"
+            map_user:
+              host_user: git
+              host_group: git
+              container_uid: 1000
+              container_gid: 1000
+            restart: always
+            secrets:
+              - name: postgres-password
+                env: FORGEJO__database__PASSWD
+            volumes:
+              - src: /srv/forgejo/data
+                dest: /data
+                owner: git
+                group: git
+                mode: "0755"
+
+          - name: db
+            image: docker.io/library/postgres:17
+            restart: always
+            volumes:
+              - src: pgdata
+                dest: /var/lib/postgresql/data
+            env:
+              POSTGRES_USER: forgejo
+              POSTGRES_DB: forgejo
+            secrets:
+              - name: postgres-password
+                env: POSTGRES_PASSWORD
+
+      # This is also a configuration to setup a forgejo instance with
+      # PostgreSQL as database. The main difference is that we place the
+      # containers into a pod. A pod has a shared network namespace and
+      # therefore the forgejo container can connect over localhost to the
+      # PostgreSQL database.
+      #
+      # While this is deployed, the container podgejo-server can't be started,
+      # because publish need to be specified for the pod and not the container.
+      - name: podgejo
+        pod: true
+
+        services:
+          - name: server
+            image: codeberg.org/forgejo/forgejo:9
+            env:
+              FORGEJO__database__DB_TYPE: postgres
+              # use localhost when using a pod
+              FORGEJO__database__HOST: localhost:5432
+              FORGEJO__database__NAME: forgejo
+              FORGEJO__database__USER: forgejo
+              FORGEJO__database__PASSWD: forgejo
+            depends_on:
+              - db
+            publish:
+              - "3001:3000"
+            restart: always
+            volumes:
+              - src: /srv/podgejo/data
+                dest: /data
+                owner: git
+                group: git
+                mode: "0755"
+
+          - name: db
+            image: docker.io/library/postgres:17
+            restart: always
+            volumes:
+              - src: pgdata
+                dest: /var/lib/postgresql/data
+            env:
+              POSTGRES_USER: forgejo
+              POSTGRES_DB: forgejo
+              POSTGRES_PASSWORD: forgejo
+
+      # This podman_construct configuration installs memos with PostgreSQL as
+      # database.
+      #
+      # This configuration is mainly used to test the user and userns keys.
+      - name: memos
+
+        secrets:
+          memos-dsn: "postgres://memos:S3cret!@db:5432/memos?sslmode=disable"
+          postgres-password: "S3cret!"
+
+        services:
+          - name: server
+            image: "ghcr.io/usememos/memos:0.23"
+            env:
+              MEMOS_DRIVER: postgres
+            depends_on:
+              - db
+            map_user:
+              host_user: alice
+              container_uid: 1000
+            publish:
+              - "5230:5230"
+            secrets:
+              - name: memos-dsn
+                env: MEMOS_DSN
+            user: 1000
+            userns: host
+
+          - name: db
+            image: docker.io/library/postgres:17
+            restart: always
+            volumes:
+              - src: pgdata
+                dest: /var/lib/postgresql/data
+            env:
+              POSTGRES_USER: memos
+              POSTGRES_DB: memos
+            secrets:
+              - name: postgres-password
+                env: POSTGRES_PASSWORD

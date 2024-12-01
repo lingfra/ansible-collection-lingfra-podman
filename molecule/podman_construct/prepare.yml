@@ -1,0 +1,54 @@
+---
+- name: "Install python on Arch Linux hosts"
+  hosts: archlinux01
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Update pacman package cache"
+      ansible.builtin.raw:
+        pacman -Sy
+      changed_when: false
+
+    - name: "Full system upgrade"
+      ansible.builtin.raw:
+        pacman -Su --noconfirm
+      changed_when: false
+
+    - name: "Install python"
+      ansible.builtin.raw:
+        pacman -S --noconfirm python
+      changed_when: false
+
+    - name: "Reboot system"
+      ansible.builtin.reboot:
+
+    - name: "Install common sys tools"
+      community.general.pacman:
+        name:
+          - htop
+          - kitty-terminfo
+          - ncdu
+          - neovim
+          - parted
+          - rsync
+          - tldr
+          - tmux
+          - which
+        state: present
+
+- name: "Preparation for hosts"
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: "Add users"
+      ansible.builtin.user:
+        name: "{{ user }}"
+        home: "/var/lib/{{ user }}"
+        create_home: true
+      loop:
+        - git
+        - alice
+        - bob
+      loop_control:
+        loop_var: user
