@@ -1,0 +1,4 @@
+---
+# tasks file for podman_config
+
+podman_config_rootful_id_range: "2147483647:2147483648"

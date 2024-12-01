@@ -1,0 +1,20 @@
+---
+# argument specs file for podman_config
+
+argument_specs:
+  main:
+    short_description: "Main entry point for podman_config role"
+    description:
+      - "This role does some necessary system configuration for using Podman."
+      - "Currently this role only adds ID ranges in `/etc/subuid` and `/etc/subgid` for the user `containers` to use the user namespace mode `auto` in rootful Podman."
+    author:
+      - "lingling"
+    options:
+      podman_config_enable:
+        type: "bool"
+        default: true
+        description:
+          - "Whether the podman configuration tasks should be run or not."
+          - "Setting this to `false` results in skipping the include for the configuration tasks."
+          - "As this role is also used as a dependency, this is a way to disable this role."
+          - "This could be desired if a custom configuration is made, which conflicts with the configuration provided by this role."
