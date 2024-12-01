@@ -1,0 +1,8 @@
+---
+# vars file for podman_install
+
+podman_install_pkgs:
+  - podman
+
+podman_install_pkgs_fuse_overlayfs:
+  - fuse-overlayfs
