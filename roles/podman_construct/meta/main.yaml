@@ -1,0 +1,21 @@
+---
+# meta file for podman_construct
+
+dependencies:
+  - role: lingfra.podman.podman_install
+    tags:
+      - podman_install
+    when:
+      - podman_install_enable | default(true)
+  - role: lingfra.podman.podman_config
+    tags:
+      - podman_config
+    when:
+      - podman_config_enable | default(true)
+
+galaxy_info:
+  author: lingling
+  description: Deploys the Podman components.
+  license: The Unlicense
+  min_ansible_version: "2.15"
+  platforms: []

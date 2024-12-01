@@ -1,0 +1,31 @@
+---
+# tasks file for podman_construct
+
+# ---------- Preparations ----------
+
+- name: Get user database
+  ansible.builtin.getent:
+    database: passwd
+  tags:
+    - always
+
+- name: Get user database
+  ansible.builtin.getent:
+    database: group
+  tags:
+    - always
+
+# ---------- Configuration ----------
+
+- name: "Include tasks construct.yaml"
+  ansible.builtin.include_tasks:
+    file: construct.yaml
+    apply:
+      tags:
+        - podman_construct
+  loop: "{{ podman_construct_list }}"
+  loop_control:
+    loop_var: podman_construct
+    label: "{{ podman_construct.name }}"
+  tags:
+    - podman_construct

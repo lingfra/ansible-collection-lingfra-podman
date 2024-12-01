@@ -1,0 +1,5 @@
+{% for k, v in systemd_dict.items() %}{% if systemd_dict[k] %}
+
+[{{ k }}]
+{{ systemd_dict[k].keys() | zip(systemd_dict[k].values()) | map('join', '=') | join('\n') }}
+{% endif %}{% endfor %}

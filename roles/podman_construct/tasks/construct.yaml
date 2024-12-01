@@ -1,0 +1,83 @@
+---
+# tasks file for podman_construct
+
+# ---------- Networks ----------
+
+- name: "Create network for construct '{{ podman_construct.name }}'"
+  containers.podman.podman_network:
+    name: "{{ podman_construct.name }}"
+    state: quadlet
+  become: true
+  when:
+    - podman_construct.services | length > 1
+    - not podman_construct.pod | default(false)
+
+- name: "Set fact podman_construct_networks"
+  ansible.builtin.set_fact:
+    podman_construct_networks:
+      - "{{ podman_construct.name ~ '.network' }}"
+  when:
+    - podman_construct.services | length > 1
+    - not podman_construct.pod | default(false)
+
+# ---------- Pod ----------
+
+- name: "Create pod for construct '{{ podman_construct.name }}'"
+  containers.podman.podman_pod:
+    name: "{{ podman_construct.name }}"
+    state: quadlet
+  become: true
+  when:
+    - podman_construct.pod | default(false)
+
+- name: "Set fact podman_construct_pod"
+  ansible.builtin.set_fact:
+    podman_construct_pod: "{{ podman_construct.name ~ '.pod' }}"
+  when:
+    - podman_construct.pod | default(false)
+
+# ---------- Secrets ----------
+
+- name: "Create secrets for construct '{{ podman_construct.name }}'"
+  containers.podman.podman_secret:
+    state: present
+    name: "{{ secret_full_name }}"
+    data: "{{ podman_construct.secrets[secret_name] }}"
+  become: true
+  loop: "{{ podman_construct.secrets.keys() }}"
+  loop_control:
+    loop_var: secret_name
+    label: "{{ secret_full_name }}"
+  vars:
+    secret_full_name: "{{ (podman_construct.name, secret_name) | join('-') }}"
+  when:
+    - "'secrets' in podman_construct.keys()"
+
+- name: "Set fact podman_construct_secrets"
+  ansible.builtin.set_fact:
+    podman_construct_secrets: "{{ podman_construct.secrets.keys() | map('ansible.builtin.regex_replace', '^(.*)$', podman_construct.name ~ '-\\1') }}"
+  when:
+    - "'secrets' in podman_construct.keys()"
+
+# ---------- Services (Containers) ----------
+
+- name: "Include tasks service.yaml"
+  ansible.builtin.include_tasks:
+    file: service.yaml
+    apply:
+      tags:
+        - podman_construct
+  loop: "{{ podman_construct.services }}"
+  loop_control:
+    loop_var: service
+    label: "{{ service.name }}"
+  vars:
+    service_name_full: "{{ podman_construct.name ~ '-' ~ service.name }}"
+
+# ---------- Clean-Up ----------
+
+- name: "Nullify internal variables"
+  ansible.builtin.set_fact:
+    podman_construct_networks: null
+    podman_construct_pod: null
+    podman_construct_secrets: null

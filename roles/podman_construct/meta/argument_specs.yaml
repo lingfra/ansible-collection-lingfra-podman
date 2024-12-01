@@ -1,0 +1,222 @@
+---
+# argument specs file for podman_construct
+
+argument_specs:
+  main:
+    short_description: "Main entry point for podman_construct role"
+    description:
+      - "This is the main entrypoint for the podman_construct role."
+      - "Creates the quadlet files for the containerized components."
+    author:
+      - "lingling"
+    options:
+      podman_construct_list:
+        type: "list"
+        elements: "dict"
+        required: true
+        description:
+          - "Specifies the configuration for the containers to be created."
+        options:
+          name:
+            type: "str"
+            required: true
+            description:
+              - "Name of the construct. Will be appended to all the created content from this role."
+          networks:
+            type: "list"
+            elements: "dict"
+            required: false
+            description:
+              - "Definition of networks, which should be available in this construct."
+            options:
+              name:
+                type: "str"
+                required: true
+                description:
+                  - "Name of the network."
+              driver:
+                type: "str"
+                required: false
+                choices:
+                  - "bridge"
+                  - "macvlan"
+                  - "ipvlan"
+                  - "external"
+                description:
+                  - "Optionally set the driver for the network."
+                  - "Refer to [**podman-network-create(1)**](https://docs.podman.io/en/latest/markdown/podman-network-create.1.html) for more information."
+                  - "The special value `external` indicates that the network should be assumed existing and not managed by Ansible."
+                  - "If unspecified falls back to `bridge`."
+          pod:
+            type: "bool"
+            required: false
+            description:
+              - "Whether the services (containers) should be placed in a pod or not."
+              - "If not placed in a pod, a network will be created."
+          secrets:
+            type: "dict"
+            required: false
+            description:
+              - "A dictionary of secrets in the form `name: content`."
+              - "It is necessary to define a secret here to use it in the service configuration."
+          services:
+            type: "list"
+            elements: "dict"
+            required: true
+            description:
+              - "Dictionary containing the definition of services."
+            options:
+              depends_on:
+                type: "str"
+                required: false
+                description:
+                  - "List of other containers or services this container should depend on."
+              env:
+                type: "dict"
+                required: false
+                description:
+                  - "Environment variables for the container."
+              hostname:
+                type: "str"
+                required: false
+                description:
+                  - "Hostname of the container."
+                  - "Defaults to use the service name from the construct config."
+              image:
+                type: "str"
+                required: false
+                description:
+                  - "Fully qualified image name (FQIN) and version (tag or digest) of the container image."
+              map_user:
+                type: "dict"
+                required: false
+                description:
+                  - "A user to be mapped into the container user namespace."
+                  - "Using this option implies user namespace mode `auto`."
+                  - "This option is ignored when specifying `userns`."
+                options:
+                  container_gid:
+                    type: "int"
+                    required: false
+                    description:
+                      - "The GID to be mapped into the container. Defaults to `container_uid` if unspecified."
+                  container_uid:
+                    type: "int"
+                    required: true
+                    description:
+                      - "The UID to be mapped into the container."
+                  host_user:
+                    type: "str"
+                    required: true
+                    description:
+                      - "A user on the host system."
+                  host_group:
+                    type: "str"
+                    required: false
+                    description:
+                      - "A group on the host system. If empty the primary group of `host_user` will be used."
+              name:
+                type: "str"
+                required: true
+                description:
+                  - "Name of the service."
+              network:
+                type: "list"
+                elements: "str"
+                required: false
+                description:
+                  - "Networks the container should be attached to."
+              pod:
+                type: "str"
+                required: false
+                description:
+                  - "Pod the container should be attached to."
+              pull:
+                type: "str"
+                required: false
+                description:
+                  - "Pull policy for the container."
+              publish:
+                type: "list"
+                elements: "str"
+                required: false
+                description:
+                  - "List of port mappings for the container."
+              restart:
+                type: "str"
+                required: false
+                choices:
+                  - "always"
+                  - "no"
+                  - "on-abnormal"
+                  - "on-abort"
+                  - "on-failure"
+                  - "on-success"
+                  - "on-watchdog"
+                description:
+                  - "Policy for restarting the service on exit. Takes the systemd service options, see **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#Restart=)**."
+              secrets:
+                type: "list"
+                elements: "dict"
+                required: false
+                description:
+                  - "Secrets the container should get access to."
+                options:
+                  name:
+                    type: "str"
+                    required: true
+                    description:
+                      - "The name of the secret as defined in the `secrets` top level option."
+                  env:
+                    type: "str"
+                    required: true
+                    description:
+                      - "Name of the environment variable inside the container, which should contain the secret."
+              user:
+                type: "str"
+                required: false
+                description:
+                  - "User running the application inside the container. Either name or UID."
+              userns:
+                type: "str"
+                required: false
+                description:
+                  - "User namespace mode for the container."
+                  - "Overwrites `map_user` when configured."
+              volumes:
+                type: "list"
+                elements: "dict"
+                required: false
+                description:
+                  - "Volumes for the container."
+                options:
+                  src:
+                    type: "str"
+                    required: true
+                    description:
+                      - "Named volume or source directory on the host."
+                  dest:
+                    type: "str"
+                    required: true
+                    description:
+                      - "Destination directory inside the container."
+                  options:
+                    type: "str"
+                    required: false
+                    description:
+                      - "Mount options for the volume (e. g. `ro`)."
+                  owner:
+                    type: "str"
+                    required: false
+                    description:
+                      - "If this is a bind volume and the folder is non-existing, the newly created folder will be owned by this user. Does not modify existing folders."
+                  group:
+                    type: "str"
+                    required: false
+                    description:
+                      - "Same as owner, but for group."
+                  mode:
+                    type: "str"
+                    required: false
+                    description:
+                      - "If this is a bind volume and the folder is non-existing, the newly created folder will have this mode. Does not modify existing folders."

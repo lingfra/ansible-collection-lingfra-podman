@@ -1,0 +1,121 @@
+---
+# tasks file for podman_construct
+
+- name: "Initialize internal facts for service '{{ service_name_full }}'"
+  ansible.builtin.set_fact:
+    podman_construct_container_systemd_options: ""
+    service_secrets: []
+    service_systemd_options: {}
+    service_systemd_options_unit: {}
+    service_volume_list: []
+
+# ---------- Systemd / Service Options ----------
+
+- name: "Set fact service_systemd_options for '{{ service_name_full }}'"
+  ansible.builtin.set_fact:
+    service_systemd_options:
+      Service:
+        Restart: "{{ service.restart | default('no') }}"
+      Install:
+        WantedBy: "{{ service.install | default('default.target') }}"
+
+- name: "Set fact service_systemd_options_unit for '{{ service_name_full }}'"
+  ansible.builtin.set_fact:
+    service_systemd_options_unit:
+      Unit:
+        Requires: "{{ deps | join(' ') }}"
+        After: "{{ deps | join(' ') }}"
+  when:
+    - service.depends_on | default([]) | length > 0
+  vars:
+    deps: "{{ service.depends_on | map('ansible.builtin.regex_replace', '^(.*)$', podman_construct.name ~ '-\\1' ~ '.service') }}"
+
+- name: "Set fact podman_construct_container_systemd_options"
+  ansible.builtin.set_fact:
+    podman_construct_container_systemd_options: "{{ lookup('ansible.builtin.template', 'systemd_options.j2') }}"
+  vars:
+    systemd_dict: "{{ service_systemd_options | ansible.builtin.combine(service_systemd_options_unit, recursive=True) }}"
+
+# ---------- Secrets ----------
+
+- name: "Set fact service_secrets for '{{ service_name_full }}'"
+  ansible.builtin.set_fact:
+    service_secrets: "{{ service_secrets + [
+        (
+          (podman_construct.name, secret.name) | join('-'),
+          'type=env',
+          'target=' ~ secret.env
+        ) | join(',')
+      ] }}"
+  loop: "{{ service.secrets }}"
+  loop_control:
+    loop_var: secret
+    label: "{{ secret.name }}"
+  when:
+    - service.secrets is defined
+
+# ---------- User Namespace ----------
+
+- name: "Set fact service_userns with user mapping for '{{ service_name_full }}'"
+  ansible.builtin.set_fact:
+    service_userns: "auto:uidmapping={{ container_uid }}:{{ host_uid }}:1,gidmapping={{ container_gid }}:{{ host_gid }}:1"
+  vars:
+    container_gid: "{{ service.map_user.container_gid | default(service.map_user.container_uid) }}"
+    container_uid: "{{ service.map_user.container_uid }}"
+    host_gid: "{{ getent_group[service.map_user.host_group][1] if service.map_user.host_group is defined else getent_passwd[service.map_user.host_user][2] }}"
+    host_uid: "{{ getent_passwd[service.map_user.host_user][1] }}"
+  when:
+    - service.map_user is defined
+    - service.userns is not defined
+
+- name: "Set fact service_userns from arguments for '{{ service_name_full }}"
+  ansible.builtin.set_fact:
+    service_userns: "{{ service.userns }}"
+  when:
+    - service.userns is defined
+
+# ---------- Volume Options ----------
+
+- name: "Include tasks volume.yaml"
+  ansible.builtin.include_tasks:
+    file: "{{ volume_type }}_volume.yaml"
+    apply:
+      tags:
+        - podman_construct
+  loop: "{{ service.volumes }}"
+  loop_control:
+    loop_var: volume
+  vars:
+    volume_type: "{{ 'bind' if (volume.src[0] in ['/', '.']) else 'named' }}"
+  when:
+    - service.volumes is defined
+
+# ---------- Container Definition ----------
+
+- name: "Create container '{{ service_name_full }}'"
+  containers.podman.podman_container:
+    image: "{{ service.image }}"
+    name: "{{ service_name_full }}"
+    state: quadlet
+
+    env: "{{ service.env | default(omit) }}"
+    hostname: "{{ omit if podman_construct.pod | default(false) else service.hostname | default(service.name) }}"
+    network: "{{ podman_construct_networks | default(none) | ansible.builtin.ternary(podman_construct_networks, omit, none_val=omit) }}"
+    pod: "{{ podman_construct_pod | default(none) | ansible.builtin.ternary(podman_construct_pod, omit, none_val=omit) }}"
+    publish: "{{ service.publish | default(omit) }}"
+    pull: "{{ service.pull | default('newer') }}"
+    quadlet_options: "{{ podman_construct_container_systemd_options }}"
+    secrets: "{{ service_secrets | default(none) | ansible.builtin.ternary(service_secrets, omit, none_val=omit) }}"
+    user: "{{ service.user | default(omit) }}"
+    userns: "{{ service_userns | default(none) | ansible.builtin.ternary(service_userns, omit, none_val=omit) }}"
+    volume: "{{ service_volume_list | default(omit) }}"
+  become: true
+  notify:
+    - "Systemd daemon reload"
+
+# ---------- Clean-Up ----------
+
+- name: "Nullify internal variables from '{{ service_name_full }}'"
+  ansible.builtin.set_fact:
+    service_userns: null
+    service_secrets: null
