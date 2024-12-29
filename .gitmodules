@@ -1,0 +1,3 @@
+[submodule ".aar_doc"]
+	path = .aar_doc
+	url = git@codeberg.org:lingfra/aar-doc-config.git
