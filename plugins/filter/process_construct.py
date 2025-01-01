@@ -1,6 +1,186 @@
 from ansible.errors import AnsibleFilterError
 
 
+class PodmanConstruct:
+    def __init__(self, construct_name) -> None:
+        self.construct_name = construct_name
+
+
+class PodmanConstructVolume(PodmanConstruct):
+    def __init__(
+        self,
+        construct_name,
+        src,
+        dest: str | None = None,
+        service_name=None,
+        options=None,
+        owner=None,
+        group=None,
+        mode=None,
+    ) -> None:
+        super().__init__(construct_name)
+        self.src: str = src
+        self.used_by: dict = {}
+
+        self.owner: str | None = owner if owner else None
+        self.group: str | None = group if group else None
+        self.mode: str | None = mode if mode else None
+
+        self.volume_type: str = self.determine_type()
+
+        self.src_name_full: str
+        self.src_quadlet_name: str | None = None
+
+        if self.volume_type == "named":
+            self.src_name_full = "-".join([self.construct_name, self.src])
+            self.src_quadlet_name = ".".join([self.src_name_full, "volume"])
+        elif self.volume_type == "bind":
+            self.src_name_full = self.src
+
+        if service_name and dest:
+            self.add_used_by(service_name, dest, options)
+
+        self.syntax_checks()
+
+    def determine_type(self) -> str:
+        if self.src[0] in [".", "/"]:
+            return "bind"
+        else:
+            return "named"
+
+    def is_volume_used_by_service(self, service_name) -> bool:
+        if service_name in self.used_by.keys():
+            return True
+        else:
+            return False
+
+    def add_used_by(self, service_name, dest, options=None) -> None:
+        if self.is_volume_used_by_service(service_name):
+            msg = f"Service '{service_name}' already present in self.used_by."
+            msg += " This could mean that there is a duplicate in the volumes list."
+            msg += f" Current data: {self.to_dict()}"
+            raise AnsibleFilterError(msg)
+        else:
+            self.used_by[service_name] = {"dest": dest, "options": options}
+
+    def syntax_checks(self) -> None:
+        self.check_permissions()
+
+    def check_permissions(self) -> None:
+        if self.volume_type == "named":
+            if self.owner or self.group or self.mode:
+                msg = "The fields 'owner', 'group' and 'mode' are only allowed"
+                msg += " on bind volumes, but not for named volumes."
+                msg += f" Current data: {self.to_dict()}"
+                raise AnsibleFilterError(msg)
+
+    def to_dict_global_bind(self) -> dict:
+        return {
+            "src": self.src,
+            "owner": self.owner,
+            "group": self.group,
+            "mode": self.mode,
+            "used_by": self.used_by,
+        }
+
+    def to_dict_global_named(self) -> dict:
+        return {
+            "src_original": self.src,
+            "src_name_full": self.src_name_full,
+            "src_quadlet_name": self.src_quadlet_name,
+            "used_by": self.used_by,
+        }
+
+    def to_string_service(self, service_name) -> str:
+        if self.is_volume_used_by_service(service_name):
+            volume_join = [self.src_name_full]
+            volume_join.append(self.used_by[service_name]["dest"])
+
+            if self.used_by[service_name]["options"]:
+                volume_join.append(self.used_by[service_name]["options"])
+            print(volume_join)
+            return ":".join(volume_join)
+        else:
+            msg = f"Volume {self.src} is not in use by {service_name}!"
+            msg += f" Current data: {self.to_dict()}"
+            raise AnsibleFilterError(msg)
+
+    def to_dict(self) -> dict:
+        return {
+            "construct_name": self.construct_name,
+            "src": self.src,
+            "used_by": self.used_by,
+            "owner": self.owner,
+            "group": self.group,
+            "mode": self.mode,
+            "volume_type": self.volume_type,
+            "src_name_full": self.src_name_full,
+            "src_quadlet_name": self.src_quadlet_name,
+        }
+
+
+class PodmanConstructVolumes(PodmanConstruct):
+    def __init__(self, construct_name) -> None:
+        super().__init__(construct_name)
+        self.volumes: list[PodmanConstructVolume] = []
+
+    def add_volume(
+        self,
+        src,
+        dest=None,
+        service_name=None,
+        options=None,
+        owner=None,
+        group=None,
+        mode=None,
+    ) -> None:
+        volume: PodmanConstructVolume | None = self.search_volume(src)
+        if not volume:
+            volume = PodmanConstructVolume(
+                self.construct_name,
+                src,
+                dest=dest,
+                service_name=service_name,
+                options=options,
+                owner=owner,
+                group=group,
+                mode=mode,
+            )
+            self.volumes.append(volume)
+        elif volume and dest:
+            volume.add_used_by(service_name, dest, options=options)
+
+    def search_volume(self, src) -> PodmanConstructVolume | None:
+        for v in self.volumes:
+            if src == v.src:
+                return v
+        return None
+
+    def get_named_volumes_for_global(self) -> list[dict]:
+        named_volumes: list[dict] = []
+        for v in self.volumes:
+            if v.volume_type == "named":
+                named_volumes.append(v.to_dict_global_named())
+        return named_volumes
+
+    def get_bind_volumes_for_global(self) -> list[dict]:
+        bind_volumes: list[dict] = []
+        for v in self.volumes:
+            if v.volume_type == "bind":
+                bind_volumes.append(v.to_dict_global_bind())
+        return bind_volumes
+
+    def get_volumes_for_service(self, service_name) -> list[str]:
+        service_volumes: list[str] = []
+        for v in self.volumes:
+            if (
+                v.is_volume_used_by_service(service_name)
+                and v.used_by[service_name]["dest"]
+            ):
+                service_volumes.append(v.to_string_service(service_name))
+        return service_volumes
+
+
 class PodmanConstructProcessor:
     # arguments for services, which should be copied unmodified
     SERVICE_COPY_ARGS = [
@@ -25,7 +205,7 @@ class PodmanConstructProcessor:
         self.pod: str | None = None
         self.secrets: list = []
         self.services: list = []
-        self.volumes: list = []
+        self.volumes: PodmanConstructVolumes = PodmanConstructVolumes(construct_name)
 
         # helper variables
         self.service_names: list = []
@@ -44,7 +224,8 @@ class PodmanConstructProcessor:
             "pod": self.pod,
             "secrets": self.secrets,
             "services": self.services,
-            "volumes": self.volumes,
+            "named_volumes": self.volumes.get_named_volumes_for_global(),
+            "bind_volumes": self.volumes.get_bind_volumes_for_global(),
         }
 
         return output
@@ -101,7 +282,14 @@ class PodmanConstructProcessor:
                 )
 
     def parse_volumes(self):
-        pass
+        if "volumes" in self.construct.keys():
+            for v in self.construct["volumes"]:
+                self.volumes.add_volume(
+                    v["src"],
+                    owner=v["owner"] if "owner" in v.keys() else None,
+                    group=v["group"] if "group" in v.keys() else None,
+                    mode=v["mode"] if "mode" in v.keys() else None,
+                )
 
     # ---------- Services ----------
 
@@ -134,6 +322,7 @@ class PodmanConstructProcessor:
         service_dict["depends_on"] = self.parse_service_depends_on(service)
         service_dict["networks"] = self.parse_service_networks(service)
         service_dict["pod"] = self.parse_service_pod()
+        service_dict["volumes"] = self.parse_service_volumes(service)
 
         return service_dict
 
@@ -167,6 +356,20 @@ class PodmanConstructProcessor:
             return self.pod
         else:
             return None
+
+    def parse_service_volumes(self, service):
+        if "volumes" in service.keys():
+            for v in service["volumes"]:
+                self.volumes.add_volume(
+                    v["src"],
+                    dest=v["dest"],
+                    service_name=service["name"],
+                    options=v["options"] if "options" in v.keys() else None,
+                    owner=v["owner"] if "owner" in v.keys() else None,
+                    group=v["group"] if "group" in v.keys() else None,
+                    mode=v["mode"] if "mode" in v.keys() else None,
+                )
+            return self.volumes.get_volumes_for_service(service["name"])
 
 
 def process_construct_name(construct):
