@@ -1,0 +1,34 @@
+---
+# Playbook lingfra.podman.podman_construct
+
+- name: "Prepare target_group_podman_construct"
+  hosts: "{{ target | default('all') }}"
+  gather_facts: false
+  strategy: linear
+  tags:
+    - always
+  tasks:
+    - name: "Create target_group_podman_construct"
+      ansible.builtin.add_host:
+        name: "{{ host }}"
+        groups: |
+          {%- set groups_for_host = [] -%}
+          {{- (groups_for_host + ['target_group_podman_construct']) if is_podman_construct_host -}}
+      loop: "{{ groups['all'] }}"
+      loop_control:
+        loop_var: host
+      run_once: true
+      vars:
+        is_podman_construct_host: "{{ true if 'podman_construct_list' in hostvars[host].keys() else false }}"
+      when:
+        - is_podman_construct_host
+
+- name: Configure Podman containers for virtual machines
+  hosts: target_group_podman_construct
+  gather_facts: true
+  tags:
+    - podman_construct
+  tasks:
+    - name: "Import role lingfra.podman.podman_construct"
+      ansible.builtin.import_role:
+        name: lingfra.podman.podman_construct
