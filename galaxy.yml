@@ -1,13 +1,15 @@
 ---
 namespace: lingfra
 name: podman
-version: "0.0.0"
+version: "0.1.0"
 readme: README.md
 authors:
   - lingling <lingling+dev@posteo.de>
 description: Collection of Ansible content for managing podman containers.
 license_file: "LICENSE"
 repository: https://codeberg.org/lingfra/ansible-collection-lingfra-podman
+issues: https://codeberg.org/lingfra/ansible-collection-lingfra-podman/issues
+documentation: https://codeberg.org/lingfra/ansible-collection-lingfra-podman
 tags:
   - container
   - infrastructure
