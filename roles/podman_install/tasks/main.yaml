@@ -1,0 +1,27 @@
+---
+# tasks file for podman_install
+
+- name: "Include OS specific variables for podman_install"
+  ansible.builtin.include_vars:
+    file: "{{ lookup('ansible.builtin.first_found', params) }}"
+  tags:
+    - podman_install
+  vars:
+    params:
+      files:
+        - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+        - "{{ ansible_distribution }}.yaml"
+        - "defaults.yaml"
+      paths:
+        - "vars"
+
+- name: "Include tasks install.yaml"
+  ansible.builtin.include_tasks:
+    file: install.yaml
+    apply:
+      tags:
+        - podman_install
+  tags:
+    - podman_install
+  when:
+    - podman_install_enable

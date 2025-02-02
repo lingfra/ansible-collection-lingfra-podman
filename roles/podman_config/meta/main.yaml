@@ -1,0 +1,11 @@
+---
+# meta file for podman_config
+
+dependencies: []
+
+galaxy_info:
+  author: lingling
+  description: Makes the necessary configuration to use Podman on a host.
+  license: The Unlicense
+  min_ansible_version: "2.15"
+  platforms: []

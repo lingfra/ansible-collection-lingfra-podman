@@ -1,0 +1,8 @@
+---
+# vars file for podman_construct
+
+podman_construct_config_systemd__default:
+  Service:
+    Restart: always
+  Install:
+    WantedBy: default.target

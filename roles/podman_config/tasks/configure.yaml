@@ -1,0 +1,18 @@
+---
+# tasks file for podman_config
+
+- name: Ensure /etc/subuid contains range for rootful containers
+  ansible.builtin.lineinfile:
+    path: /etc/subuid
+    line: "containers:{{ podman_config_rootful_id_range }}"
+    state: present
+    regexp: '^containers'
+  become: true
+
+- name: Ensure /etc/subgid contains range for rootful containers
+  ansible.builtin.lineinfile:
+    path: /etc/subgid
+    line: "containers:{{ podman_config_rootful_id_range }}"
+    state: present
+    regexp: '^containers'
+  become: true

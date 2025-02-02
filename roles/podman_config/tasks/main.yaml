@@ -1,0 +1,13 @@
+---
+# tasks file for podman_config
+
+- name: "Include tasks configure.yaml"
+  ansible.builtin.include_tasks:
+    file: configure.yaml
+    apply:
+      tags:
+        - podman_config
+  tags:
+    - podman_config
+  when:
+    - podman_config_enable

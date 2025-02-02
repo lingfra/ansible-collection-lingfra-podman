@@ -1,0 +1,30 @@
+---
+# tasks file for podman_construct
+
+- name: Stat volume src path
+  ansible.builtin.stat:
+    path: "{{ volume.src }}"
+  register: st_volume_src
+
+- name: "Create volume src path if it not exists"
+  ansible.builtin.file:
+    path: "{{ volume.src }}"
+    state: directory
+    owner: "{{ volume.owner | default('root') }}"
+    group: "{{ volume.group | default('root') }}"
+    mode: "{{ volume.mode | default('0700') }}"
+  become: true
+  when:
+    - not st_volume_src.stat.exists
+
+- name: "Add volume to service_volume_list for {{ podman_construct.name }}"
+  ansible.builtin.set_fact:
+    service_volume_list: "{{ service_volume_list + [
+      volume.src ~ ':' ~ volume.dest ~ ((':' ~ volume_options) if volume_options )
+      ] }}"
+  vars:
+    volume_options: "{{ volume.options | default(none) }}"
+
+- name: "Nullify internal variables"
+  ansible.builtin.set_fact:
+    st_volume_src: null

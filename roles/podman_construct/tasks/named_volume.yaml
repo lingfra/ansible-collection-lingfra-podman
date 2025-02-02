@@ -1,0 +1,32 @@
+---
+# tasks file for podman_construct
+
+# ---------- Named Volumes ----------
+
+- name: "Set fact volume_name"
+  ansible.builtin.set_fact:
+    volume_name: "{{ ([podman_construct.name, volume.src] | join('-')) }}"
+
+- name: "Create named volume {{ volume.src }}"
+  containers.podman.podman_volume:
+    state: quadlet
+    name: "{{ volume_name }}"
+  become: true
+  notify:
+    - "Systemd daemon reload"
+  vars:
+    volume_name: "{{ [podman_construct_instance_name, podman_construct_config.name, volume.src] | join('-') }}"
+  when:
+    - volume_name
+
+- name: "Add volume to service_volume_list for {{ podman_construct.name }}"
+  ansible.builtin.set_fact:
+    service_volume_list: "{{ service_volume_list + [
+      (volume_name ~ '.volume' if volume_name else volume.src) ~ ':' ~ volume.dest ~ ((':' ~ volume_options) if volume_options )
+      ] }}"
+  vars:
+    volume_options: "{{ volume.options | default(none) }}"
+
+- name: "Nullify internal variables"
+  ansible.builtin.set_fact:
+    volume_name: null

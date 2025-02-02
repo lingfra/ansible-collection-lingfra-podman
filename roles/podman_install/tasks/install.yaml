@@ -1,0 +1,15 @@
+---
+# tasks file for podman_install
+
+- name: "Append fuse-overlayfs pkgs to install list"
+  ansible.builtin.set_fact:
+    podman_install_install_pkgs: "{{ podman_install_pkgs
+      + podman_install_pkgs_fuse_overlayfs }}"
+  when:
+    - podman_install_fuse_overlayfs
+
+- name: "Install packages for podman"
+  ansible.builtin.package:
+    name: "{{ podman_install_pkgs }}"
+    state: present
+  become: true
