@@ -98,6 +98,7 @@
     name: "{{ service_name_full }}"
     state: quadlet
 
+    command: "{{ service.command | default(omit) }}"
     env: "{{ service.env | default(omit) }}"
     hostname: "{{ omit if podman_construct.pod | default(false) else service.hostname | default(service.name) }}"
     network: "{{ podman_construct_networks | default(none) | ansible.builtin.ternary(podman_construct_networks, omit, none_val=omit) }}"

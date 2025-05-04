@@ -66,6 +66,10 @@ argument_specs:
             description:
               - "Dictionary containing the definition of services."
             options:
+              command:
+                type: "list"
+                elements: "str"
+                required: false
               depends_on:
                 type: "str"
                 required: false
