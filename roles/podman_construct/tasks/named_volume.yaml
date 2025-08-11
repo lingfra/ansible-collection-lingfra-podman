@@ -16,8 +16,6 @@
     - "Systemd daemon reload"
   vars:
     volume_name: "{{ [podman_construct_instance_name, podman_construct_config.name, volume.src] | join('-') }}"
-  when:
-    - volume_name
 
 - name: "Add volume to service_volume_list for {{ podman_construct.name }}"
   ansible.builtin.set_fact:
