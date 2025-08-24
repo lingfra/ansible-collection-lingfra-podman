@@ -102,13 +102,13 @@
     env: "{{ service.env | default(omit) }}"
     hostname: "{{ omit if podman_construct.pod | default(false) else service.hostname | default(service.name) }}"
     network: "{{ podman_construct_networks if podman_construct_networks is defined else omit }}"
-    pod: "{{ podman_construct_pod | default(none) | ansible.builtin.ternary(podman_construct_pod | default(none), omit, none_val=omit) }}"
+    pod: "{{ podman_construct_pod if podman_construct_pod is defined else omit }}"
     publish: "{{ service.publish | default(omit) }}"
     pull: "{{ service.pull | default('newer') }}"
     quadlet_options: "{{ podman_construct_container_systemd_options }}"
-    secrets: "{{ service_secrets | default(none) | ansible.builtin.ternary(service_secrets, omit, none_val=omit) }}"
+    secrets: "{{ service_secrets if service_secrets is defined else omit }}"
     user: "{{ service.user | default(omit) }}"
-    userns: "{{ service_userns | default(none) | ansible.builtin.ternary(service_userns, omit, none_val=omit) }}"
+    userns: "{{ service_userns if service_userns is defined else omit }}"
     volume: "{{ service_volume_list | default(omit) }}"
   become: true
   notify:
