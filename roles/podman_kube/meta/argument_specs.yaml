@@ -1,0 +1,81 @@
+---
+# argument specs file for lingfra.podman.podman_kube
+
+argument_specs:
+  main:
+    short_description: "Main entry point for lingfra.podman.podman_kube role"
+    description:
+      - "The scope of this role is to template kube spec files from the Ansible playbook directory to a host."
+      - "It is on the user to write the kube spec."
+      - "To run the kube spec a `.kube` quadlet file will be templated to `/etc/containrs/systemd`."
+      - "This role also takes care of starting, enabling and restarting the systemd service after changes."
+    author:
+      - "lingling"
+    options:
+      podman_kube_list:
+        type: "list"
+        elements: "dict"
+        default: []
+        description:
+          - "A list of kube specs."
+        options:
+          description:
+            type: "str"
+            required: false
+            description:
+              - "This description will be added to the system unit."
+              - "It will appear in the output of `systemctl list-units` or `systemctl status <UNIT-NAME>`."
+          name:
+            type: "str"
+            required: true
+            description:
+              - "Name of the kube spec."
+          quadlet_options:
+            type: "str"
+            required: false
+            description:
+              - "Options for the quadlet file, which are copied to the systemd unit."
+          restart:
+            type: "str"
+            required: false
+            choices:
+              - "always"
+              - "no"
+              - "on-abnormal"
+              - "on-abort"
+              - "on-failure"
+              - "on-success"
+              - "on-watchdog"
+            description:
+              - "Policy for restarting the service on exit."
+              - "Takes the systemd service options, see **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#Restart=)**."
+          template:
+            type: "str"
+            required: true
+            description:
+              - "Name of a template file residing in the playbooks template directory."
+          template_vars:
+            type: "dict"
+            required: false
+            description:
+              - "Variables for the template."
+    examples: |
+      ```yaml
+      - name: "Configure podman kube play quadlets"
+        hosts: all
+        gather_facts: true
+        tags:
+          - podman_kube
+        tasks:
+          - name: "Import role lingfra.podman.podman_kube"
+            ansible.builtin.import_role:
+              name: lingfra.podman.podman_kube
+            vars:
+              podman_kube_list:
+                - name: mailserver
+                  # file residing in /path/to/playbook/dir/templates/kube/mailserver.yaml.j2
+                  template: kube/mailserver.yaml.j2
+                  # the template has a variable called 'template_vars.hostnanme'
+                  template_vars:
+                    hostname: mail.example.com
+      ```

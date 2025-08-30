@@ -1,0 +1,36 @@
+---
+# tasks file for lingfra.podman.podman_kube
+
+- name: "Create kube quadlet '{{ kube.name }}'"
+  containers.podman.podman_play:
+    kube_file: "{{ kube.name }}.yaml"
+    quadlet_filename: "{{ kube.name }}.kube"
+    quadlet_options: "{{ lookup('ansible.builtin.template', 'quadlet_options.j2') }}"
+    state: quadlet
+  become: true
+  notify:
+    - Systemd daemon-reload
+    - Restart services
+  register: kube_quadlet
+
+- name: "Template {{ kube.name }}.yaml"
+  ansible.builtin.template:
+    src: "{{ kube.template }}"
+    dest: "{{ (podman_kube_containers_dir_path, kube.name) | ansible.builtin.path_join ~ '.yaml' }}"
+    owner: root
+    group: root
+    mode: "0600"
+  become: true
+  notify:
+    - Systemd daemon-reload
+    - Restart services
+  register: kube_template
+  vars:
+    template_vars: "{{ kube.template_vars | default({}) }}"
+
+- name: "Add service to podman_kube_services_restart list"
+  ansible.builtin.set_fact:
+    podman_kube_services_restart: "{{ podman_kube_services_restart + [kube.name ~ '.service'] }}"
+  when: >
+    (kube_quadlet.changed | default(false)) or
+    (kube_template.changed | default(false))

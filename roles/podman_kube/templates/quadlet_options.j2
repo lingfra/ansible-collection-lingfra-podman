@@ -1,0 +1,12 @@
+{% if kube.quadlet_options is defined %}
+{{ kube.quadlet_options }}
+{% endif %}
+
+[Unit]
+Description={{ kube.description if kube.description is defined else 'podman kube play ' ~ kube.name }}
+
+[Service]
+Restart={{ kube.restart | default('always') }}
+
+[Install]
+WantedBy=default.target

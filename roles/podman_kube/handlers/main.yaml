@@ -1,0 +1,16 @@
+---
+# handlers file for lingfra.podman.podman_kube
+
+- name: Systemd daemon-reload
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  become: true
+
+- name: Restart services
+  ansible.builtin.systemd_service:
+    name: "{{ service }}"
+    state: restarted
+  become: true
+  loop: "{{ podman_kube_services_restart }}"
+  loop_control:
+    loop_var: service

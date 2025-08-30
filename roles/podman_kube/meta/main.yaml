@@ -1,0 +1,11 @@
+---
+# meta file for podman_construct
+
+dependencies: []
+
+galaxy_info:
+  author: lingling
+  description: Deploys kubernetes spec files and runs them.
+  license: The Unlicense
+  min_ansible_version: "2.16"
+  platforms: []

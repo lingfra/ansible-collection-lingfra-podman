@@ -1,0 +1,5 @@
+---
+# vars file for lingfra.podman.podman_kube
+
+podman_kube_containers_dir_path: /etc/containers/systemd
+podman_kube_services_restart: []
