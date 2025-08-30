@@ -1,0 +1,10 @@
+---
+- name: "Configure podman kube play quadlets"
+  hosts: "{{ target | default('all') }}"
+  gather_facts: true
+  tags:
+    - podman_kube
+  tasks:
+    - name: "Import role lingfra.podman.podman_kube"
+      ansible.builtin.import_role:
+        name: lingfra.podman.podman_kube
