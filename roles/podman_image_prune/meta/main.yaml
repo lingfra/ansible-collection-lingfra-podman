@@ -1,0 +1,11 @@
+---
+# meta file for lingfra.podman.podman_image_prune
+
+dependencies: []
+
+galaxy_info:
+  author: lingling
+  description: Configures a systemd service to prune unused OCI images.
+  license: The Unlicense
+  min_ansible_version: "2.15"
+  platforms: []

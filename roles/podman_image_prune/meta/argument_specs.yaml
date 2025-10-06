@@ -1,0 +1,36 @@
+---
+# argument specs file for podman_image_prune
+
+argument_specs:
+  main:
+    short_description: "Main entry point for podman_image_prune role"
+    description:
+      - "This is the main entrypoint for the podman_image_prune role."
+    author:
+      - "lingling"
+    options:
+      podman_image_prune_on_calendar:
+        type: "str"
+        default: "*-*-* 01:00:00"
+        description:
+          - "The time on which the service should be started."
+          - "See **`systemd.time(7)`** for more information."
+      podman_image_prune_user_list:
+        type: "list"
+        elements: "dict"
+        default: []
+        description:
+          - "A list of users for which the podman images should be pruned."
+        options:
+          name:
+            type: "str"
+            required: true
+            description:
+              - "The name of the user."
+          enabled:
+            type: "bool"
+            default: true
+            description:
+              - "Specify if the unit should be enabled for the user or not."
+              - "The default is to enable the user if it is specified in this list."
+              - "Set this option to `false` if you want to disable the timer for this user."

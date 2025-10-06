@@ -1,0 +1,10 @@
+---
+- name: "Configure podman-image-prune@ systemd service"
+  hosts: "{{ target | default('all') }}"
+  gather_facts: true
+  tags:
+    - podman_image_prune
+  tasks:
+    - name: "Import role lingfra.podman.podman_image_prune"
+      ansible.builtin.import_role:
+        name: lingfra.podman.podman_image_prune

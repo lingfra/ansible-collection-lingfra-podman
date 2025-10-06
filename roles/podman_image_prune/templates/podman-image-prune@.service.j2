@@ -1,0 +1,17 @@
+[Unit]
+Description=Prune unused OCI images from podman cache
+Documentation=https://codeberg.org/lingfra/ansible-collection-lingfra-system
+Wants=multi-user.target
+After=multi-user.target
+
+[Service]
+Type=oneshot
+User=%i
+ExecStart=systemd-inhibit --who="Podman image prune" --why="Prevent damaged image storage" podman image prune --all --force
+
+LockPersonality=True
+NoNewPrivileges=True
+ProtectHostname=True
+ProtectKernelLogs=True
+ProtectKernelModules=True
+ProtectKernelTunables=True

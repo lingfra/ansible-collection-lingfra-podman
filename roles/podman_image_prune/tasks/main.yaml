@@ -1,0 +1,44 @@
+---
+# tasks file for lingfra.podman.podman_image_prune
+
+- name: "Template podman image prune systemd service"
+  ansible.builtin.template:
+    src: podman-image-prune@.service.j2
+    dest: /etc/systemd/system/podman-image-prune@.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  register: podman_image_prune_template_service
+
+- name: "Template podman image prune systemd timer"
+  ansible.builtin.template:
+    src: podman-image-prune@.timer.j2
+    dest: /etc/systemd/system/podman-image-prune@.timer
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  register: podman_image_prune_template_timer
+
+- name: "Run systemd daemon-reload"
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  become: true
+  when: >
+    podman_image_prune_template_service.changed
+    or podman_image_prune_template_timer.changed
+
+- name: "Manage systemd timer instances"
+  ansible.builtin.systemd_service:
+    name: "{{ unit_name }}"
+    enabled: "{{ unit_enabled }}"
+    state: "{{ 'started' if unit_enabled else 'stopped' }}"
+  become: true
+  loop: "{{ podman_image_prune_user_list }}"
+  loop_control:
+    loop_var: user
+    label: "{{ unit_name }}"
+  vars:
+    unit_name: "{{ 'podman-image-prune@' ~ user.name ~ '.timer' }}"
+    unit_enabled: "{{ user.enabled | default(true) }}"

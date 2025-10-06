@@ -35,6 +35,8 @@ caution!**
 configuration to use Podman on a host.
 - [podman_construct](./roles/podman_construct/README.md): Deploys the Podman
 components.
+- [podman_image_prune](./roles/podman_image_prune/README.md): Configures a
+systemd service to prune unused OCI images.
 - [podman_install](./roles/podman_install/README.md): Installs Podman on a host.
 - [podman_kube](./roles/podman_kube/README.md): Deploys kubernetes spec files and runs them.
 
@@ -44,6 +46,8 @@ components.
 `podman_construct_list` in their `hostvars` and runs the
 [podman_construct](./roles/podman_construct/README.md) role on that group. The
 roles `podman_config` and `podman_install` are pulled in as dependencies.
+- [podman_image_prune](./playbooks/podman_image_prune.yaml): Runs role
+[podman_image_prune](./roles/podman_image_prune/README.md).
 - [podman_kube](./playbooks/podman_kube.yaml): Runs role [podman_kube](./roles/podman_kube/README.md).
 
 ## Installation
