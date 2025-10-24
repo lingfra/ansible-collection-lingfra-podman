@@ -91,6 +91,11 @@ argument_specs:
                 required: false
                 description:
                   - "Fully qualified image name (FQIN) and version (tag or digest) of the container image."
+              labels:
+                type: "dict"
+                required: false
+                description:
+                  - "Labels to be added to the container"
               map_user:
                 type: "dict"
                 required: false
