@@ -9,6 +9,12 @@
     service_systemd_options_unit: {}
     service_volume_list: []
 
+- name: "Set fact podman_construct_networks"
+  ansible.builtin.set_fact:
+    podman_construct_networks: "{{ service.network }}"
+  when:
+    - service.network is defined
+
 # ---------- Systemd / Service Options ----------
 
 - name: "Set fact service_systemd_options for '{{ service_name_full }}'"
