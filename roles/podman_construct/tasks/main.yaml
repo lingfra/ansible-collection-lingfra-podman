@@ -17,6 +17,28 @@
 
 # ---------- Configuration ----------
 
+- name: "Create global podman networks"
+  containers.podman.podman_network:
+    disable_dns: "{{ network.disable_dns | default(omit) }}"
+    dns: "{{ network.dns | default(omit) }}"
+    driver: "{{ network.driver | default(omit) }}"
+    gateway: "{{ network.gateway | default(omit) }}"
+    interface_name: "{{ network.interface_name | default(omit) }}"
+    internal: "{{ network.internal | default(omit) }}"
+    ipam_driver: "{{ network.ipam_driver | default(omit) }}"
+    ipv6: "{{ network.ipv6 | default(omit) }}"
+    name: "{{ network.name }}"
+    state: "{{ 'quadlet' if network.state | default('present') == 'present' else 'absent' }}"
+    subnet: "{{ network.subnet | default(omit) }}"
+  loop: "{{ podman_construct_network_list }}"
+  loop_control:
+    loop_var: network
+    label: "{{ network.name }}"
+  become: true
+  tags:
+    - podman
+    - podman_construct
+
 - name: "Include tasks construct.yaml"
   ansible.builtin.include_tasks:
     file: construct.yaml

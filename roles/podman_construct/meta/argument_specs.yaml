@@ -229,3 +229,69 @@ argument_specs:
                     required: false
                     description:
                       - "If this is a bind volume and the folder is non-existing, the newly created folder will have this mode. Does not modify existing folders."
+
+      podman_construct_network_list:
+        type: "list"
+        elements: "dict"
+        required: false
+        description:
+          - "A list of servive unrelated networks to create."
+          - "Most options are passthroughed to the ansible module [containers.podman.podman_network](https://docs.ansible.com/projects/ansible/latest/collections/containers/podman/podman_network_module.html)."
+          - "See its documentation for a reference to the options."
+        options:
+          disable_dns:
+            type: "bool"
+            required: false
+          dns:
+            type: "str"
+            required: false
+          driver:
+            type: "str"
+            required: false
+            choices:
+              - "bridge"
+              - "macvlan"
+              - "ipvlan"
+              - "external"
+            description:
+              - "Optionally set the driver for the network."
+              - "Refer to [**podman-network-create(1)**](https://docs.podman.io/en/latest/markdown/podman-network-create.1.html) for more information."
+              - "The special value `external` indicates that the network should be assumed existing and not managed by Ansible."
+              - "If unspecified falls back to `bridge`."
+          gateway:
+            type: "str"
+            required: false
+          interface_name:
+            type: "str"
+            required: false
+          internal:
+            type: "bool"
+            required: false
+          ipam_driver:
+            type: "str"
+            required: false
+          ipv6:
+            type: "str"
+            required: false
+          name:
+            type: "str"
+            required: true
+            description:
+              - "Name of the quadlet file."
+          network_name:
+            type: "str"
+            required: false
+            description:
+              - "Name of the podman network (e. g. `podman network ls`)."
+          state:
+            type: "str"
+            required: false
+            choices:
+              - "present"
+              - "absent"
+            description:
+              - "This is the only option, which has little different effects than the original option from the ansible module."
+              - "As this role always creates a quadlet `present` means that the quadlet is present and `absent` means that the quadlet is removed."
+          subnet:
+            type: "str"
+            required: false
