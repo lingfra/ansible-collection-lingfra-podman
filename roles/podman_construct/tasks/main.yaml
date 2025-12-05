@@ -38,6 +38,8 @@
   tags:
     - podman
     - podman_construct
+  when:
+    - podman_construct_network_list is defined
 
 - name: "Include tasks construct.yaml"
   ansible.builtin.include_tasks:
