@@ -105,6 +105,7 @@
     state: quadlet
 
     command: "{{ service.command | default(omit) }}"
+    entrypoint: "{{ service.entrypoint | default(omit) }}"
     env: "{{ service.env | default(omit) }}"
     hostname: "{{ omit if podman_construct.pod | default(false) else service.hostname | default(service.name) }}"
     labels: "{{ service.labels if service.labels is defined else omit }}"

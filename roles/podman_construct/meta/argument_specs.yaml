@@ -75,6 +75,9 @@ argument_specs:
                 required: false
                 description:
                   - "List of other containers or services this container should depend on."
+              entrypoint:
+                type: "str"
+                required: false
               env:
                 type: "dict"
                 required: false
