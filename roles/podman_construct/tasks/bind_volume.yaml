@@ -4,6 +4,7 @@
 - name: Stat volume src path
   ansible.builtin.stat:
     path: "{{ volume.src }}"
+  become: true
   register: st_volume_src
 
 - name: "Create volume src path if it not exists"
