@@ -73,6 +73,20 @@
   when:
     - service.map_user is defined
     - service.userns is not defined
+    - service.map_user.host_user is defined
+
+- name: "Set fact service_userns with user mapping for '{{ service_name_full }}'"
+  ansible.builtin.set_fact:
+    service_userns: "auto:uidmapping={{ container_uid }}:{{ host_uid }}:1,gidmapping={{ container_gid }}:{{ host_gid }}:1"
+  vars:
+    container_gid: "{{ service.map_user.container_gid | default(service.map_user.container_uid) }}"
+    container_uid: "{{ service.map_user.container_uid }}"
+    host_gid: "{{ service.map_user.host_gid }}"
+    host_uid: "{{ service.map_user.host_uid }}"
+  when:
+    - service.map_user is defined
+    - service.userns is not defined
+    - service.map_user.host_uid is defined
 
 - name: "Set fact service_userns from arguments for '{{ service_name_full }}"
   ansible.builtin.set_fact:

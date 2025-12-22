@@ -196,6 +196,9 @@ argument_specs:
                   - "A user to be mapped into the container user namespace."
                   - "Using this option implies user namespace mode `auto`."
                   - "This option is ignored when specifying `userns`."
+                mutually_exclusive:
+                  - ["host_uid", "host_user"]
+                  - ["host_gid", "host_group"]
                 options:
                   container_gid:
                     type: "int"
@@ -207,11 +210,17 @@ argument_specs:
                     required: true
                     description:
                       - "The UID to be mapped into the container."
+                  host_uid:
+                    type: "int"
+                    required: false
                   host_user:
                     type: "str"
-                    required: true
+                    required: false
                     description:
                       - "A user on the host system."
+                  host_gid:
+                    type: "int"
+                    required: false
                   host_group:
                     type: "str"
                     required: false
