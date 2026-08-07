@@ -1,6 +1,14 @@
 ---
 # tasks file for podman_config
 
+- name: Add user containers
+  ansible.builtin.user:
+    name: containers
+    create_home: false
+    shell: /usr/bin/nologin
+    system: true
+  become: true
+
 - name: Ensure /etc/subuid contains range for rootful containers
   ansible.builtin.lineinfile:
     path: /etc/subuid
