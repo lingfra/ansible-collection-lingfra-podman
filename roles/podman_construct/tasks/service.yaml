@@ -118,6 +118,8 @@
     name: "{{ service_name_full }}"
     state: quadlet
 
+    cap_add: "{{ service.cap_add | default(omit) }}"
+    cap_drop: "{{ service.cap_drop | default(omit) }}"
     command: "{{ service.command | default(omit) }}"
     entrypoint: "{{ service.entrypoint | default(omit) }}"
     env: "{{ service.env | default(omit) }}"

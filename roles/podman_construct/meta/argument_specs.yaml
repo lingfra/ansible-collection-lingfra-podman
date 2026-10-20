@@ -66,6 +66,14 @@ argument_specs:
             description:
               - "Dictionary containing the definition of services."
             options:
+              cap_add:
+                type: "list"
+                elements: "str"
+                required: false
+              cap_drop:
+                type: "list"
+                elements: "str"
+                required: false
               command:
                 type: "list"
                 elements: "str"
