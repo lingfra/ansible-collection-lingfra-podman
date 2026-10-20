@@ -83,6 +83,96 @@ argument_specs:
                 required: false
                 description:
                   - "Environment variables for the container."
+              healthcheck:
+                type: "dict"
+                required: false
+                description:
+                  - "Health check configuration for the container."
+                  - "Refer to [**podman-run(1)**](https://docs.podman.io/en/latest/markdown/podman-run.1.html) for more information."
+                  - "The options correspond to the `--health-*` options of podman."
+                options:
+                  cmd:
+                    type: "str"
+                    required: false
+                    description:
+                      - "Command to run inside the container to check its health."
+                      - "Use `none` to disable a health check defined in the container image."
+                  interval:
+                    type: "str"
+                    required: false
+                    description:
+                      - "Interval between health checks (e. g. `30s`). The value `disable` results in no automatic timer setup."
+                  log_destination:
+                    type: "str"
+                    required: false
+                    description:
+                      - "Destination of the health check logs. Either `local`, `events_logger` or a directory path."
+                  max_log_count:
+                    type: "int"
+                    required: false
+                    description:
+                      - "Maximum number of health check log entries to keep. `0` means infinite."
+                  max_log_size:
+                    type: "int"
+                    required: false
+                    description:
+                      - "Maximum character length of each health check log entry. `0` means infinite."
+                  on_failure:
+                    type: "str"
+                    required: false
+                    choices:
+                      - "none"
+                      - "kill"
+                      - "restart"
+                      - "stop"
+                    description:
+                      - "Action to take when the container is considered unhealthy."
+                  retries:
+                    type: "int"
+                    required: false
+                    description:
+                      - "Number of consecutive failures before the container is considered unhealthy."
+                  start_period:
+                    type: "str"
+                    required: false
+                    description:
+                      - "Initialization time of the container, during which failed health checks are not counted (e. g. `1m`)."
+                  timeout:
+                    type: "str"
+                    required: false
+                    description:
+                      - "Maximum time a health check command may run before it is considered failed (e. g. `30s`)."
+                  startup:
+                    type: "dict"
+                    required: false
+                    description:
+                      - "Startup health check, which runs until it succeeds before the regular health check begins."
+                    options:
+                      cmd:
+                        type: "str"
+                        required: true
+                        description:
+                          - "Command to run inside the container for the startup health check."
+                      interval:
+                        type: "str"
+                        required: false
+                        description:
+                          - "Interval between startup health checks."
+                      retries:
+                        type: "int"
+                        required: false
+                        description:
+                          - "Number of attempts before the container is restarted. `0` means the container is never restarted."
+                      success:
+                        type: "int"
+                        required: false
+                        description:
+                          - "Number of successful runs required before the regular health check begins."
+                      timeout:
+                        type: "str"
+                        required: false
+                        description:
+                          - "Maximum time a startup health check command may run before it is considered failed."
               hostname:
                 type: "str"
                 required: false
