@@ -245,6 +245,19 @@ argument_specs:
                 required: false
                 description:
                   - "Networks the container should be attached to."
+              notify:
+                type: "str"
+                required: false
+                choices:
+                  - "true"
+                  - "false"
+                  - "healthy"
+                description:
+                  - "How systemd startup notifications are handled for the container."
+                  - "`true` lets the application inside the container send the notification itself (requires sd_notify support)."
+                  - "`healthy` delays the notification until the container is marked healthy (requires `healthcheck.cmd`)."
+                  - "Defaults to `false`, where the service is started once the container runtime starts the container."
+                  - "Refer to [**podman-systemd.unit(5)**](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) for more information."
               pod:
                 type: "str"
                 required: false

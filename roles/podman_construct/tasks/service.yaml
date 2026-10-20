@@ -1,6 +1,18 @@
 ---
 # tasks file for podman_construct
 
+# ---------- Validation ----------
+
+- name: "Assert healthcheck is configured for notify 'healthy' in '{{ service_name_full }}'"
+  ansible.builtin.assert:
+    that:
+      - service.healthcheck.cmd is defined
+      - service.healthcheck.cmd | lower != 'none'
+    fail_msg: "Service '{{ service_name_full }}' sets 'notify: healthy', which requires 'healthcheck.cmd' to be set."
+    quiet: true
+  when:
+    - service.notify | default('') | string | lower == 'healthy'
+
 - name: "Initialize internal facts for service '{{ service_name_full }}'"
   ansible.builtin.set_fact:
     podman_construct_container_systemd_options: ""
@@ -144,6 +156,7 @@
     publish: "{{ service.publish | default(omit) }}"
     pull: "{{ service.pull | default('newer') }}"
     quadlet_options: "{{ podman_construct_container_systemd_options }}"
+    sdnotify: "{{ service.notify | string | lower if service.notify is defined else omit }}"
     secrets: "{{ service_secrets if service_secrets is defined else omit }}"
     user: "{{ service.user | default(omit) }}"
     userns: "{{ service_userns if service_userns is defined else omit }}"
