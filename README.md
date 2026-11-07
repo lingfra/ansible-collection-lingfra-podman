@@ -1,5 +1,19 @@
 # Ansible Collection - lingfra.podman
 
+> [!WARNING]
+> **This repository has moved to GitHub:
+> [github.com/lingfra/ansible-collection-lingfra-podman](https://github.com/lingfra/ansible-collection-lingfra-podman).**
+> The Codeberg repository is no longer maintained. All issues and pull requests
+> have been migrated, keeping their numbers.
+>
+> In July 2026 the Codeberg e.V. assembly
+> [voted](https://blog.codeberg.org/protecting-our-floss-commons-from-llms.html)
+> to extend Codeberg's Terms of Use with
+> [§ 2 (1) 7](https://codeberg.org/Codeberg/org/commit/71149c7fc95ccfeae36109b5cddca339e4aa1473),
+> which prohibits sharing projects that mostly consist of code written by
+> generative AI tools such as Claude or OpenAI Codex. AI assistance is used for
+> this repository, so it moved to GitHub.
+
 Collection of Ansible content for managing Podman containers.
 
 The main scope of this collection is to deploy Podman containers as systemd
@@ -82,7 +96,7 @@ following `requirements.yaml` entry, can be used to download directly from Git:
 ```yaml
 ---
 collections:
-  - name: https://codeberg.org/lingfra/ansible-collection-lingfra-podman
+  - name: https://github.com/lingfra/ansible-collection-lingfra-podman
     version: main
     type: git
 ```
@@ -268,7 +282,7 @@ inventory files. Therefore, it is necessary to specify a custom manager. Add a
 ```
 
 You may need to adjust the `fileMatch` regex depending on your inventory
-structure. See [codeberg#3][codeberg#3] for more information.
+structure. See [#3][issue-3] for more information.
 
 There are many ways to [run
 Renovate](https://docs.renovatebot.com/getting-started/running/). One way to run
@@ -327,8 +341,8 @@ systemctl enable --now renovate-bot.timer
 
 ## Limitations
 
-- [#1: Pods not supported](https://codeberg.org/lingfra/ansible-collection-lingfra-podman/issues/1)
-- [#4: `.build` Quadlets not supported](https://codeberg.org/lingfra/ansible-collection-lingfra-podman/issues/4)
+- [#1: Pods not supported](https://github.com/lingfra/ansible-collection-lingfra-podman/issues/1)
+- [#4: `.build` Quadlets not supported](https://github.com/lingfra/ansible-collection-lingfra-podman/issues/4)
 
 ## Documentation
 
@@ -355,8 +369,8 @@ lingling ([Codeberg][Codeberg], [GitHub][GitHub])
 [Codeberg]: https://codeberg.org/lingling
 [GitHub]: https://github.com/lingling9000
 
-[codeberg#3]: https://codeberg.org/lingfra/ansible-collection-lingfra-podman/issues/3
-[construct-doc]: https://codeberg.org/lingfra/ansible-collection-lingfra-podman/src/branch/poc/roles/podman_construct#podman_construct_list
+[issue-3]: https://github.com/lingfra/ansible-collection-lingfra-podman/issues/3
+[construct-doc]: https://github.com/lingfra/ansible-collection-lingfra-podman/tree/main/roles/podman_construct#podman_construct_list
 [docker-compose]: https://docs.docker.com/compose/
 [quadlet-intro]: https://www.redhat.com/en/blog/quadlet-podman
 [quadlet]: https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html

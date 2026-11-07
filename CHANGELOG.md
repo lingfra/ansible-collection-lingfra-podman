@@ -19,5 +19,5 @@ files.
 - Added role podman_construct
 - Added playbook podman_construct
 
-[Unreleased]: https://codeberg.org/lingfra/ansible-collection-lingfra-podman/compare/v0.1.0..HEAD
-[0.1.0]: https://codeberg.org/lingfra/ansible-collection-lingfra-podman/releases/tag/v0.1.0
+[Unreleased]: https://github.com/lingfra/ansible-collection-lingfra-podman/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/lingfra/ansible-collection-lingfra-podman/releases/tag/v0.1.0

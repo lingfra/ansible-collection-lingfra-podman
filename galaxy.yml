@@ -7,9 +7,9 @@ authors:
   - lingling <lingling+dev@posteo.de>
 description: Collection of Ansible content for managing podman containers.
 license_file: "LICENSE"
-repository: https://codeberg.org/lingfra/ansible-collection-lingfra-podman
-issues: https://codeberg.org/lingfra/ansible-collection-lingfra-podman/issues
-documentation: https://codeberg.org/lingfra/ansible-collection-lingfra-podman
+repository: https://github.com/lingfra/ansible-collection-lingfra-podman
+issues: https://github.com/lingfra/ansible-collection-lingfra-podman/issues
+documentation: https://github.com/lingfra/ansible-collection-lingfra-podman
 tags:
   - container
   - infrastructure
