@@ -7,7 +7,7 @@ argument_specs:
     description:
       - "This is the main entrypoint for the podman_image_prune role."
     author:
-      - "lingling"
+      - "Stella Kemmerling"
     options:
       podman_image_prune_on_calendar:
         type: "str"

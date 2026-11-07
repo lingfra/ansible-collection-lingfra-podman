@@ -4,7 +4,7 @@ name: podman
 version: "0.1.0"
 readme: README.md
 authors:
-  - lingling <lingling+dev@posteo.de>
+  - Stella Kemmerling <stella@10x1.eu>
 description: Collection of Ansible content for managing podman containers.
 license_file: "LICENSE"
 repository: https://github.com/lingfra/ansible-collection-lingfra-podman

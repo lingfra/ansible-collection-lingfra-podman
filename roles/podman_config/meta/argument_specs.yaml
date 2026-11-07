@@ -8,7 +8,7 @@ argument_specs:
       - "This role does some necessary system configuration for using Podman."
       - "Currently this role only adds ID ranges in `/etc/subuid` and `/etc/subgid` for the user `containers` to use the user namespace mode `auto` in rootful Podman."
     author:
-      - "lingling"
+      - "Stella Kemmerling"
     options:
       podman_config_enable:
         type: "bool"

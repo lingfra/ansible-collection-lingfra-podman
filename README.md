@@ -362,13 +362,6 @@ aar-doc roles/foo markdown
 
 [The Unlicense](./LICENSE)
 
-## Author Information
-
-lingling ([Codeberg][Codeberg], [GitHub][GitHub])
-
-[Codeberg]: https://codeberg.org/lingling
-[GitHub]: https://github.com/lingling9000
-
 [issue-3]: https://github.com/lingfra/ansible-collection-lingfra-podman/issues/3
 [construct-doc]: https://github.com/lingfra/ansible-collection-lingfra-podman/tree/main/roles/podman_construct#podman_construct_list
 [docker-compose]: https://docs.docker.com/compose/

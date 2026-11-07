@@ -10,7 +10,7 @@ argument_specs:
       - "To run the kube spec a `.kube` quadlet file will be templated to `/etc/containrs/systemd`."
       - "This role also takes care of starting, enabling and restarting the systemd service after changes."
     author:
-      - "lingling"
+      - "Stella Kemmerling"
     options:
       podman_kube_list:
         type: "list"

@@ -14,7 +14,7 @@ dependencies:
       - podman_config_enable | default(true)
 
 galaxy_info:
-  author: lingling
+  author: Stella Kemmerling
   description: Deploys the Podman components.
   license: The Unlicense
   min_ansible_version: "2.15"

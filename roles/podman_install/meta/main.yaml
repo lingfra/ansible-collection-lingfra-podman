@@ -4,7 +4,7 @@
 dependencies: []
 
 galaxy_info:
-  author: lingling
+  author: Stella Kemmerling
   description: Installs Podman on a host.
   license: The Unlicense
   min_ansible_version: "2.15"

@@ -4,7 +4,7 @@
 dependencies: []
 
 galaxy_info:
-  author: lingling
+  author: Stella Kemmerling
   description: Deploys kubernetes spec files and runs them.
   license: The Unlicense
   min_ansible_version: "2.16"
