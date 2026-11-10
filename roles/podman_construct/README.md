@@ -16,31 +16,25 @@ Creates the quadlet files for the containerized components.
 
 #### `podman_construct_list`
 
-Type: `list of dicts of 'podman_construct_list' options`, **required**.
+Type: list of dicts of `podman_construct_list` [options](#options-for-main--podman_construct_list), **required**.
 
 Specifies the configuration for the containers to be created.
 
-**Options:**
+#### `podman_construct_network_list`
+
+Type: list of dicts of `podman_construct_network_list` [options](#options-for-main--podman_construct_network_list), optional.
+
+A list of servive unrelated networks to create. Most options are passthroughed to the ansible module [containers.podman.podman_network](https://docs.ansible.com/projects/ansible/latest/collections/containers/podman/podman_network_module.html). See its documentation for a reference to the options.
+
+### Options for `main` > `podman_construct_list`
 
 - **`name`** (Type: `str`, **required**).
 
   Name of the construct. Will be appended to all the created content from this role.
 
-- `networks` (Type: `list of dicts of 'networks' options`, optional).
+- `networks` (Type: list of dicts of `networks` [options](#options-for-main--podman_construct_list--networks), optional).
 
   Definition of networks, which should be available in this construct.
-
-  **Options:**
-
-  - **`name`** (Type: `str`, **required**).
-
-    Name of the network.
-
-  - `driver` (Type: `str`, optional).
-
-    Optionally set the driver for the network. Refer to [**podman-network-create(1)**](https://docs.podman.io/en/latest/markdown/podman-network-create.1.html) for more information. The special value `external` indicates that the network should be assumed existing and not managed by Ansible. If unspecified falls back to `bridge`.
-
-    *Choices:* `bridge`, `macvlan`, `ipvlan`, `external`
 
 - `pod` (Type: `bool`, optional).
 
@@ -50,227 +44,233 @@ Specifies the configuration for the containers to be created.
 
   A dictionary of secrets in the form `name: content`. It is necessary to define a secret here to use it in the service configuration.
 
-- **`services`** (Type: `list of dicts of 'services' options`, **required**).
+- **`services`** (Type: list of dicts of `services` [options](#options-for-main--podman_construct_list--services), **required**).
 
   Dictionary containing the definition of services.
 
-  **Options:**
+### Options for `main` > `podman_construct_list` > `networks`
 
-  - `cap_add` (Type: `list of 'str'`, optional).
+- **`name`** (Type: `str`, **required**).
 
-  - `cap_drop` (Type: `list of 'str'`, optional).
+  Name of the network.
 
-  - `command` (Type: `list of 'str'`, optional).
+- `driver` (Type: `str`, optional).
 
-  - `depends_on` (Type: `str`, optional).
+  Optionally set the driver for the network. Refer to [**podman-network-create(1)**](https://docs.podman.io/en/latest/markdown/podman-network-create.1.html) for more information. The special value `external` indicates that the network should be assumed existing and not managed by Ansible. If unspecified falls back to `bridge`.
 
-    List of other containers or services this container should depend on.
+  *Choices:* `bridge`, `macvlan`, `ipvlan`, `external`
 
-  - `entrypoint` (Type: `str`, optional).
+### Options for `main` > `podman_construct_list` > `services`
 
-  - `env` (Type: `dict`, optional).
+- `cap_add` (Type: list of `str`, optional).
 
-    Environment variables for the container.
+- `cap_drop` (Type: list of `str`, optional).
 
-  - `healthcheck` (Type: `dict of 'healthcheck' options`, optional).
+- `command` (Type: list of `str`, optional).
 
-    Health check configuration for the container. Refer to [**podman-run(1)**](https://docs.podman.io/en/latest/markdown/podman-run.1.html) for more information. The options correspond to the `--health-*` options of podman.
+- `depends_on` (Type: `str`, optional).
 
-    **Options:**
+  List of other containers or services this container should depend on.
 
-    - `cmd` (Type: `str`, optional).
+- `entrypoint` (Type: `str`, optional).
 
-      Command to run inside the container to check its health. Use `none` to disable a health check defined in the container image.
+- `env` (Type: `dict`, optional).
 
-    - `interval` (Type: `str`, optional).
+  Environment variables for the container.
 
-      Interval between health checks (e. g. `30s`). The value `disable` results in no automatic timer setup.
+- `healthcheck` (Type: dict of `healthcheck` [options](#options-for-main--podman_construct_list--services--healthcheck), optional).
 
-    - `log_destination` (Type: `str`, optional).
+  Health check configuration for the container. Refer to [**podman-run(1)**](https://docs.podman.io/en/latest/markdown/podman-run.1.html) for more information. The options correspond to the `--health-*` options of podman.
 
-      Destination of the health check logs. Either `local`, `events_logger` or a directory path.
+- `hostname` (Type: `str`, optional).
 
-    - `max_log_count` (Type: `int`, optional).
+  Hostname of the container. Defaults to use the service name from the construct config.
 
-      Maximum number of health check log entries to keep. `0` means infinite.
+- `image` (Type: `str`, optional).
 
-    - `max_log_size` (Type: `int`, optional).
+  Fully qualified image name (FQIN) and version (tag or digest) of the container image.
 
-      Maximum character length of each health check log entry. `0` means infinite.
+- `labels` (Type: `dict`, optional).
 
-    - `on_failure` (Type: `str`, optional).
+  Labels to be added to the container
 
-      Action to take when the container is considered unhealthy.
+- `map_user` (Type: dict of `map_user` [options](#options-for-main--podman_construct_list--services--map_user), optional).
 
-      *Choices:* `none`, `kill`, `restart`, `stop`
+  A user to be mapped into the container user namespace. Using this option implies user namespace mode `auto`. This option is ignored when specifying `userns`.
 
-    - `retries` (Type: `int`, optional).
+- **`name`** (Type: `str`, **required**).
 
-      Number of consecutive failures before the container is considered unhealthy.
+  Name of the service.
 
-    - `start_period` (Type: `str`, optional).
+- `network` (Type: list of `str`, optional).
 
-      Initialization time of the container, during which failed health checks are not counted (e. g. `1m`).
+  Networks the container should be attached to.
 
-    - `timeout` (Type: `str`, optional).
+- `notify` (Type: `str`, optional).
 
-      Maximum time a health check command may run before it is considered failed (e. g. `30s`).
+  How systemd startup notifications are handled for the container. `true` lets the application inside the container send the notification itself (requires sd_notify support). `healthy` delays the notification until the container is marked healthy (requires `healthcheck.cmd`). Defaults to `false`, where the service is started once the container runtime starts the container. Refer to [**podman-systemd.unit(5)**](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) for more information.
 
-    - `startup` (Type: `dict of 'startup' options`, optional).
+  *Choices:* `true`, `false`, `healthy`
 
-      Startup health check, which runs until it succeeds before the regular health check begins.
+- `pod` (Type: `str`, optional).
 
-      **Options:**
+  Pod the container should be attached to.
 
-      - **`cmd`** (Type: `str`, **required**).
+- `pull` (Type: `str`, optional).
 
-        Command to run inside the container for the startup health check.
+  Pull policy for the container.
 
-      - `interval` (Type: `str`, optional).
+- `publish` (Type: list of `str`, optional).
 
-        Interval between startup health checks.
+  List of port mappings for the container.
 
-      - `retries` (Type: `int`, optional).
+- `restart` (Type: `str`, optional).
 
-        Number of attempts before the container is restarted. `0` means the container is never restarted.
+  Policy for restarting the service on exit. Takes the systemd service options, see **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#Restart=)**.
 
-      - `success` (Type: `int`, optional).
+  *Choices:* `always`, `no`, `on-abnormal`, `on-abort`, `on-failure`, `on-success`, `on-watchdog`
 
-        Number of successful runs required before the regular health check begins.
+- `secrets` (Type: list of dicts of `secrets` [options](#options-for-main--podman_construct_list--services--secrets), optional).
 
-      - `timeout` (Type: `str`, optional).
+  Secrets the container should get access to.
 
-        Maximum time a startup health check command may run before it is considered failed.
+- `user` (Type: `str`, optional).
 
-  - `hostname` (Type: `str`, optional).
+  User running the application inside the container. Either name or UID.
 
-    Hostname of the container. Defaults to use the service name from the construct config.
+- `userns` (Type: `str`, optional).
 
-  - `image` (Type: `str`, optional).
+  User namespace mode for the container. Overwrites `map_user` when configured.
 
-    Fully qualified image name (FQIN) and version (tag or digest) of the container image.
+- `volumes` (Type: list of dicts of `volumes` [options](#options-for-main--podman_construct_list--services--volumes), optional).
 
-  - `labels` (Type: `dict`, optional).
+  Volumes for the container.
 
-    Labels to be added to the container
+### Options for `main` > `podman_construct_list` > `services` > `healthcheck`
 
-  - `map_user` (Type: `dict of 'map_user' options`, optional).
+- `cmd` (Type: `str`, optional).
 
-    A user to be mapped into the container user namespace. Using this option implies user namespace mode `auto`. This option is ignored when specifying `userns`.
+  Command to run inside the container to check its health. Use `none` to disable a health check defined in the container image.
 
-    **Options:**
+- `interval` (Type: `str`, optional).
 
-    - `container_gid` (Type: `int`, optional).
+  Interval between health checks (e. g. `30s`). The value `disable` results in no automatic timer setup.
 
-      The GID to be mapped into the container. Defaults to `container_uid` if unspecified.
+- `log_destination` (Type: `str`, optional).
 
-    - **`container_uid`** (Type: `int`, **required**).
+  Destination of the health check logs. Either `local`, `events_logger` or a directory path.
 
-      The UID to be mapped into the container.
+- `max_log_count` (Type: `int`, optional).
 
-    - `host_uid` (Type: `int`, optional).
+  Maximum number of health check log entries to keep. `0` means infinite.
 
-    - `host_user` (Type: `str`, optional).
+- `max_log_size` (Type: `int`, optional).
 
-      A user on the host system.
+  Maximum character length of each health check log entry. `0` means infinite.
 
-    - `host_gid` (Type: `int`, optional).
+- `on_failure` (Type: `str`, optional).
 
-    - `host_group` (Type: `str`, optional).
+  Action to take when the container is considered unhealthy.
 
-      A group on the host system. If empty the primary group of `host_user` will be used.
+  *Choices:* `none`, `kill`, `restart`, `stop`
 
-  - **`name`** (Type: `str`, **required**).
+- `retries` (Type: `int`, optional).
 
-    Name of the service.
+  Number of consecutive failures before the container is considered unhealthy.
 
-  - `network` (Type: `list of 'str'`, optional).
+- `start_period` (Type: `str`, optional).
 
-    Networks the container should be attached to.
+  Initialization time of the container, during which failed health checks are not counted (e. g. `1m`).
 
-  - `notify` (Type: `str`, optional).
+- `timeout` (Type: `str`, optional).
 
-    How systemd startup notifications are handled for the container. `true` lets the application inside the container send the notification itself (requires sd_notify support). `healthy` delays the notification until the container is marked healthy (requires `healthcheck.cmd`). Defaults to `false`, where the service is started once the container runtime starts the container. Refer to [**podman-systemd.unit(5)**](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) for more information.
+  Maximum time a health check command may run before it is considered failed (e. g. `30s`).
 
-    *Choices:* `true`, `false`, `healthy`
+- `startup` (Type: dict of `startup` [options](#options-for-main--podman_construct_list--services--healthcheck--startup), optional).
 
-  - `pod` (Type: `str`, optional).
+  Startup health check, which runs until it succeeds before the regular health check begins.
 
-    Pod the container should be attached to.
+### Options for `main` > `podman_construct_list` > `services` > `healthcheck` > `startup`
 
-  - `pull` (Type: `str`, optional).
+- **`cmd`** (Type: `str`, **required**).
 
-    Pull policy for the container.
+  Command to run inside the container for the startup health check.
 
-  - `publish` (Type: `list of 'str'`, optional).
+- `interval` (Type: `str`, optional).
 
-    List of port mappings for the container.
+  Interval between startup health checks.
 
-  - `restart` (Type: `str`, optional).
+- `retries` (Type: `int`, optional).
 
-    Policy for restarting the service on exit. Takes the systemd service options, see **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#Restart=)**.
+  Number of attempts before the container is restarted. `0` means the container is never restarted.
 
-    *Choices:* `always`, `no`, `on-abnormal`, `on-abort`, `on-failure`, `on-success`, `on-watchdog`
+- `success` (Type: `int`, optional).
 
-  - `secrets` (Type: `list of dicts of 'secrets' options`, optional).
+  Number of successful runs required before the regular health check begins.
 
-    Secrets the container should get access to.
+- `timeout` (Type: `str`, optional).
 
-    **Options:**
+  Maximum time a startup health check command may run before it is considered failed.
 
-    - **`name`** (Type: `str`, **required**).
+### Options for `main` > `podman_construct_list` > `services` > `map_user`
 
-      The name of the secret as defined in the `secrets` top level option.
+- `container_gid` (Type: `int`, optional).
 
-    - **`env`** (Type: `str`, **required**).
+  The GID to be mapped into the container. Defaults to `container_uid` if unspecified.
 
-      Name of the environment variable inside the container, which should contain the secret.
+- **`container_uid`** (Type: `int`, **required**).
 
-  - `user` (Type: `str`, optional).
+  The UID to be mapped into the container.
 
-    User running the application inside the container. Either name or UID.
+- `host_uid` (Type: `int`, optional).
 
-  - `userns` (Type: `str`, optional).
+- `host_user` (Type: `str`, optional).
 
-    User namespace mode for the container. Overwrites `map_user` when configured.
+  A user on the host system.
 
-  - `volumes` (Type: `list of dicts of 'volumes' options`, optional).
+- `host_gid` (Type: `int`, optional).
 
-    Volumes for the container.
+- `host_group` (Type: `str`, optional).
 
-    **Options:**
+  A group on the host system. If empty the primary group of `host_user` will be used.
 
-    - **`src`** (Type: `str`, **required**).
+### Options for `main` > `podman_construct_list` > `services` > `secrets`
 
-      Named volume or source directory on the host.
+- **`name`** (Type: `str`, **required**).
 
-    - **`dest`** (Type: `str`, **required**).
+  The name of the secret as defined in the `secrets` top level option.
 
-      Destination directory inside the container.
+- **`env`** (Type: `str`, **required**).
 
-    - `options` (Type: `str`, optional).
+  Name of the environment variable inside the container, which should contain the secret.
 
-      Mount options for the volume (e. g. `ro`).
+### Options for `main` > `podman_construct_list` > `services` > `volumes`
 
-    - `owner` (Type: `str`, optional).
+- **`src`** (Type: `str`, **required**).
 
-      If this is a bind volume and the folder is non-existing, the newly created folder will be owned by this user. Does not modify existing folders.
+  Named volume or source directory on the host.
 
-    - `group` (Type: `str`, optional).
+- **`dest`** (Type: `str`, **required**).
 
-      Same as owner, but for group.
+  Destination directory inside the container.
 
-    - `mode` (Type: `str`, optional).
+- `options` (Type: `str`, optional).
 
-      If this is a bind volume and the folder is non-existing, the newly created folder will have this mode. Does not modify existing folders.
+  Mount options for the volume (e. g. `ro`).
 
-#### `podman_construct_network_list`
+- `owner` (Type: `str`, optional).
 
-Type: `list of dicts of 'podman_construct_network_list' options`, optional.
+  If this is a bind volume and the folder is non-existing, the newly created folder will be owned by this user. Does not modify existing folders.
 
-A list of servive unrelated networks to create. Most options are passthroughed to the ansible module [containers.podman.podman_network](https://docs.ansible.com/projects/ansible/latest/collections/containers/podman/podman_network_module.html). See its documentation for a reference to the options.
+- `group` (Type: `str`, optional).
 
-**Options:**
+  Same as owner, but for group.
+
+- `mode` (Type: `str`, optional).
+
+  If this is a bind volume and the folder is non-existing, the newly created folder will have this mode. Does not modify existing folders.
+
+### Options for `main` > `podman_construct_network_list`
 
 - `disable_dns` (Type: `bool`, optional).
 
