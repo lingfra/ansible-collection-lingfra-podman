@@ -344,6 +344,17 @@ Example for generating the `README.md` file for a role named _foo_:
 aar-doc roles/foo markdown
 ```
 
+A [pre-commit](https://pre-commit.com) hook
+([lingfra/pre-commit-aar-doc](https://github.com/lingfra/pre-commit-aar-doc))
+regenerates the documentation of all roles on every commit. If a `README.md`
+changes, the commit is aborted: stage the updated file and commit again. Enable
+the hook once after cloning the repository:
+
+```bash
+git submodule update --init
+pre-commit install
+```
+
 ## License
 
 [The Unlicense](./LICENSE)

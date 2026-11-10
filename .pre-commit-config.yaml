@@ -1,0 +1,6 @@
+---
+repos:
+  - repo: https://github.com/lingfra/pre-commit-aar-doc
+    rev: v1.1.0
+    hooks:
+      - id: aar-doc
