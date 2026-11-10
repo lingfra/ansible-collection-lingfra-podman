@@ -18,11 +18,11 @@ This role also takes care of starting, enabling and restarting the systemd servi
 
 #### `podman_kube_list`
 
-Type: `list of dicts of 'podman_kube_list' options`, Default: `[]`.
+Type: list of dicts of `podman_kube_list` [options](#options-for-main--podman_kube_list), Default: `[]`.
 
 A list of kube specs.
 
-**Options:**
+### Options for `main` > `podman_kube_list`
 
 - `description` (Type: `str`, optional).
 
@@ -40,8 +40,7 @@ A list of kube specs.
 
   Policy for restarting the service on exit. Takes the systemd service options, see **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#Restart=)**.
 
-  *Choices:* `always`, `no`, `on-abnormal`, `on-abort`, `on-failure`, `on-success`, `on-watchdog`
-
+  _Choices:_ `always`, `no`, `on-abnormal`, `on-abort`, `on-failure`, `on-success`, `on-watchdog`
 
 - **`template`** (Type: `str`, **required**).
 

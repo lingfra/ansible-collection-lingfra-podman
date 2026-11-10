@@ -58,7 +58,7 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
   Optionally set the driver for the network. Refer to [**podman-network-create(1)**](https://docs.podman.io/en/latest/markdown/podman-network-create.1.html) for more information. The special value `external` indicates that the network should be assumed existing and not managed by Ansible. If unspecified falls back to `bridge`.
 
-  *Choices:* `bridge`, `macvlan`, `ipvlan`, `external`
+  _Choices:_ `bridge`, `macvlan`, `ipvlan`, `external`
 
 ### Options for `main` > `podman_construct_list` > `services`
 
@@ -110,7 +110,7 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
   How systemd startup notifications are handled for the container. `true` lets the application inside the container send the notification itself (requires sd_notify support). `healthy` delays the notification until the container is marked healthy (requires `healthcheck.cmd`). Defaults to `false`, where the service is started once the container runtime starts the container. Refer to [**podman-systemd.unit(5)**](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) for more information.
 
-  *Choices:* `true`, `false`, `healthy`
+  _Choices:_ `true`, `false`, `healthy`
 
 - `pod` (Type: `str`, optional).
 
@@ -128,7 +128,7 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
   Policy for restarting the service on exit. Takes the systemd service options, see **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#Restart=)**.
 
-  *Choices:* `always`, `no`, `on-abnormal`, `on-abort`, `on-failure`, `on-success`, `on-watchdog`
+  _Choices:_ `always`, `no`, `on-abnormal`, `on-abort`, `on-failure`, `on-success`, `on-watchdog`
 
 - `secrets` (Type: list of dicts of `secrets` [options](#options-for-main--podman_construct_list--services--secrets), optional).
 
@@ -172,7 +172,7 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
   Action to take when the container is considered unhealthy.
 
-  *Choices:* `none`, `kill`, `restart`, `stop`
+  _Choices:_ `none`, `kill`, `restart`, `stop`
 
 - `retries` (Type: `int`, optional).
 
@@ -280,7 +280,7 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
   Optionally set the driver for the network. Refer to [**podman-network-create(1)**](https://docs.podman.io/en/latest/markdown/podman-network-create.1.html) for more information. The special value `external` indicates that the network should be assumed existing and not managed by Ansible. If unspecified falls back to `bridge`.
 
-  *Choices:* `bridge`, `macvlan`, `ipvlan`, `external`
+  _Choices:_ `bridge`, `macvlan`, `ipvlan`, `external`
 
 - `gateway` (Type: `str`, optional).
 
@@ -304,7 +304,7 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
   This is the only option, which has little different effects than the original option from the ansible module. As this role always creates a quadlet `present` means that the quadlet is present and `absent` means that the quadlet is removed.
 
-  *Choices:* `present`, `absent`
+  _Choices:_ `present`, `absent`
 
 - `subnet` (Type: `str`, optional).
 

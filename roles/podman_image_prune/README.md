@@ -21,11 +21,11 @@ The time on which the service should be started. See **`systemd.time(7)`** for m
 
 #### `podman_image_prune_user_list`
 
-Type: `list of dicts of 'podman_image_prune_user_list' options`, Default: `[]`.
+Type: list of dicts of `podman_image_prune_user_list` [options](#options-for-main--podman_image_prune_user_list), Default: `[]`.
 
 A list of users for which the podman images should be pruned.
 
-**Options:**
+### Options for `main` > `podman_image_prune_user_list`
 
 - **`name`** (Type: `str`, **required**).
 
