@@ -1,7 +1,7 @@
 <!-- BEGIN_ANSIBLE_DOCS -->
 # Ansible Role: lingfra.podman.podman_construct
 
-Deployes the Podman components.
+Deploys the Podman components.
 
 ## Supported Platforms
 
@@ -40,12 +40,7 @@ Specifies the configuration for the containers to be created.
 
     Optionally set the driver for the network. Refer to [**podman-network-create(1)**](https://docs.podman.io/en/latest/markdown/podman-network-create.1.html) for more information. The special value `external` indicates that the network should be assumed existing and not managed by Ansible. If unspecified falls back to `bridge`.
 
-    **Choices:**
-
-    - `bridge`
-    - `macvlan`
-    - `ipvlan`
-    - `external`
+    *Choices:* `bridge`, `macvlan`, `ipvlan`, `external`
 
 - `pod` (Type: `bool`, optional).
 
@@ -61,13 +56,91 @@ Specifies the configuration for the containers to be created.
 
   **Options:**
 
+  - `cap_add` (Type: `list of 'str'`, optional).
+
+  - `cap_drop` (Type: `list of 'str'`, optional).
+
+  - `command` (Type: `list of 'str'`, optional).
+
   - `depends_on` (Type: `str`, optional).
 
     List of other containers or services this container should depend on.
 
+  - `entrypoint` (Type: `str`, optional).
+
   - `env` (Type: `dict`, optional).
 
     Environment variables for the container.
+
+  - `healthcheck` (Type: `dict of 'healthcheck' options`, optional).
+
+    Health check configuration for the container. Refer to [**podman-run(1)**](https://docs.podman.io/en/latest/markdown/podman-run.1.html) for more information. The options correspond to the `--health-*` options of podman.
+
+    **Options:**
+
+    - `cmd` (Type: `str`, optional).
+
+      Command to run inside the container to check its health. Use `none` to disable a health check defined in the container image.
+
+    - `interval` (Type: `str`, optional).
+
+      Interval between health checks (e. g. `30s`). The value `disable` results in no automatic timer setup.
+
+    - `log_destination` (Type: `str`, optional).
+
+      Destination of the health check logs. Either `local`, `events_logger` or a directory path.
+
+    - `max_log_count` (Type: `int`, optional).
+
+      Maximum number of health check log entries to keep. `0` means infinite.
+
+    - `max_log_size` (Type: `int`, optional).
+
+      Maximum character length of each health check log entry. `0` means infinite.
+
+    - `on_failure` (Type: `str`, optional).
+
+      Action to take when the container is considered unhealthy.
+
+      *Choices:* `none`, `kill`, `restart`, `stop`
+
+    - `retries` (Type: `int`, optional).
+
+      Number of consecutive failures before the container is considered unhealthy.
+
+    - `start_period` (Type: `str`, optional).
+
+      Initialization time of the container, during which failed health checks are not counted (e. g. `1m`).
+
+    - `timeout` (Type: `str`, optional).
+
+      Maximum time a health check command may run before it is considered failed (e. g. `30s`).
+
+    - `startup` (Type: `dict of 'startup' options`, optional).
+
+      Startup health check, which runs until it succeeds before the regular health check begins.
+
+      **Options:**
+
+      - **`cmd`** (Type: `str`, **required**).
+
+        Command to run inside the container for the startup health check.
+
+      - `interval` (Type: `str`, optional).
+
+        Interval between startup health checks.
+
+      - `retries` (Type: `int`, optional).
+
+        Number of attempts before the container is restarted. `0` means the container is never restarted.
+
+      - `success` (Type: `int`, optional).
+
+        Number of successful runs required before the regular health check begins.
+
+      - `timeout` (Type: `str`, optional).
+
+        Maximum time a startup health check command may run before it is considered failed.
 
   - `hostname` (Type: `str`, optional).
 
@@ -76,6 +149,10 @@ Specifies the configuration for the containers to be created.
   - `image` (Type: `str`, optional).
 
     Fully qualified image name (FQIN) and version (tag or digest) of the container image.
+
+  - `labels` (Type: `dict`, optional).
+
+    Labels to be added to the container
 
   - `map_user` (Type: `dict of 'map_user' options`, optional).
 
@@ -91,9 +168,13 @@ Specifies the configuration for the containers to be created.
 
       The UID to be mapped into the container.
 
-    - **`host_user`** (Type: `str`, **required**).
+    - `host_uid` (Type: `int`, optional).
+
+    - `host_user` (Type: `str`, optional).
 
       A user on the host system.
+
+    - `host_gid` (Type: `int`, optional).
 
     - `host_group` (Type: `str`, optional).
 
@@ -106,6 +187,12 @@ Specifies the configuration for the containers to be created.
   - `network` (Type: `list of 'str'`, optional).
 
     Networks the container should be attached to.
+
+  - `notify` (Type: `str`, optional).
+
+    How systemd startup notifications are handled for the container. `true` lets the application inside the container send the notification itself (requires sd_notify support). `healthy` delays the notification until the container is marked healthy (requires `healthcheck.cmd`). Defaults to `false`, where the service is started once the container runtime starts the container. Refer to [**podman-systemd.unit(5)**](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) for more information.
+
+    *Choices:* `true`, `false`, `healthy`
 
   - `pod` (Type: `str`, optional).
 
@@ -123,15 +210,7 @@ Specifies the configuration for the containers to be created.
 
     Policy for restarting the service on exit. Takes the systemd service options, see **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#Restart=)**.
 
-    **Choices:**
-
-    - `always`
-    - `no`
-    - `on-abnormal`
-    - `on-abort`
-    - `on-failure`
-    - `on-success`
-    - `on-watchdog`
+    *Choices:* `always`, `no`, `on-abnormal`, `on-abort`, `on-failure`, `on-success`, `on-watchdog`
 
   - `secrets` (Type: `list of dicts of 'secrets' options`, optional).
 
@@ -185,10 +264,54 @@ Specifies the configuration for the containers to be created.
 
       If this is a bind volume and the folder is non-existing, the newly created folder will have this mode. Does not modify existing folders.
 
+#### `podman_construct_network_list`
+
+Type: `list of dicts of 'podman_construct_network_list' options`, optional.
+
+A list of servive unrelated networks to create. Most options are passthroughed to the ansible module [containers.podman.podman_network](https://docs.ansible.com/projects/ansible/latest/collections/containers/podman/podman_network_module.html). See its documentation for a reference to the options.
+
+**Options:**
+
+- `disable_dns` (Type: `bool`, optional).
+
+- `dns` (Type: `str`, optional).
+
+- `driver` (Type: `str`, optional).
+
+  Optionally set the driver for the network. Refer to [**podman-network-create(1)**](https://docs.podman.io/en/latest/markdown/podman-network-create.1.html) for more information. The special value `external` indicates that the network should be assumed existing and not managed by Ansible. If unspecified falls back to `bridge`.
+
+  *Choices:* `bridge`, `macvlan`, `ipvlan`, `external`
+
+- `gateway` (Type: `str`, optional).
+
+- `interface_name` (Type: `str`, optional).
+
+- `internal` (Type: `bool`, optional).
+
+- `ipam_driver` (Type: `str`, optional).
+
+- `ipv6` (Type: `str`, optional).
+
+- **`name`** (Type: `str`, **required**).
+
+  Name of the quadlet file.
+
+- `network_name` (Type: `str`, optional).
+
+  Name of the podman network (e. g. `podman network ls`).
+
+- `state` (Type: `str`, optional).
+
+  This is the only option, which has little different effects than the original option from the ansible module. As this role always creates a quadlet `present` means that the quadlet is present and `absent` means that the quadlet is removed.
+
+  *Choices:* `present`, `absent`
+
+- `subnet` (Type: `str`, optional).
+
 ## Dependencies
 
-- {'role': 'lingfra.podman.podman_install', 'tags': ['podman_install']}
-- {'role': 'lingfra.podman.podman_config', 'tags': ['podman_config']}
+- {'role': 'lingfra.podman.podman_install', 'tags': ['podman_install'], 'when': ['podman_install_enable | default(true)']}
+- {'role': 'lingfra.podman.podman_config', 'tags': ['podman_config'], 'when': ['podman_config_enable | default(true)']}
 
 ## Project Information
 
