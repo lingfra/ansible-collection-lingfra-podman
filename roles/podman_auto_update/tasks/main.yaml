@@ -1,0 +1,106 @@
+---
+# tasks file for lingfra.podman.podman_auto_update
+
+# ---------- Validation ----------
+
+# An invalid OnCalendar= leaves the timer without a trigger after the reset in
+# the drop-in. Fail before writing anything.
+- name: "Validate OnCalendar expressions"
+  ansible.builtin.command:
+    argv:
+      - systemd-analyze
+      - calendar
+      - "{{ on_calendar }}"
+  changed_when: false
+  check_mode: false
+  loop: "{{ system_on_calendar + users_on_calendar }}"
+  loop_control:
+    loop_var: on_calendar
+  vars:
+    system_on_calendar: "{{ [podman_auto_update_on_calendar] if podman_auto_update_on_calendar is defined else [] }}"
+    users_on_calendar: "{{ podman_auto_update_user_list | selectattr('on_calendar', 'defined') | map(attribute='on_calendar') | list }}"
+
+# ---------- System ----------
+
+- name: "Create drop-in directory for system podman-auto-update.timer"
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ podman_auto_update_timer }}.d"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  when:
+    - podman_auto_update_on_calendar is defined
+
+- name: "Template OnCalendar drop-in for system podman-auto-update.timer"
+  ansible.builtin.template:
+    src: on-calendar.conf.j2
+    dest: "/etc/systemd/system/{{ podman_auto_update_timer }}.d/{{ podman_auto_update_dropin_name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  register: podman_auto_update_system_dropin_present
+  vars:
+    podman_auto_update_dropin_on_calendar: "{{ podman_auto_update_on_calendar }}"
+  when:
+    - podman_auto_update_on_calendar is defined
+
+- name: "Remove OnCalendar drop-in for system podman-auto-update.timer"
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ podman_auto_update_timer }}.d/{{ podman_auto_update_dropin_name }}"
+    state: absent
+  become: true
+  register: podman_auto_update_system_dropin_absent
+  when:
+    - podman_auto_update_on_calendar is not defined
+
+# Disabling a missing unit fails. Skip hosts without Podman, so the role can be
+# applied to the whole inventory.
+- name: "Check if system podman-auto-update.timer exists"
+  ansible.builtin.command:
+    argv:
+      - systemctl
+      - list-unit-files
+      - --no-legend
+      - "{{ podman_auto_update_timer }}"
+  register: podman_auto_update_system_unit
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when:
+    - not podman_auto_update_enabled | bool
+
+- name: "Manage system podman-auto-update.timer"
+  ansible.builtin.systemd_service:
+    name: "{{ podman_auto_update_timer }}"
+    daemon_reload: "{{ podman_auto_update_dropin_changed }}"
+    enabled: "{{ podman_auto_update_enabled | bool }}"
+    state: "{{ ('restarted' if podman_auto_update_dropin_changed else 'started') if podman_auto_update_enabled | bool else 'stopped' }}"
+  become: true
+  vars:
+    podman_auto_update_dropin_changed: "{{ podman_auto_update_system_dropin_present is changed or podman_auto_update_system_dropin_absent is changed }}"
+  when:
+    - podman_auto_update_enabled | bool or podman_auto_update_system_unit.stdout | length > 0
+
+# ---------- Users ----------
+
+- name: "Get user database"
+  ansible.builtin.getent:
+    database: passwd
+  when:
+    - podman_auto_update_user_list | length > 0
+
+- name: "Include tasks user.yaml"
+  ansible.builtin.include_tasks:
+    file: user.yaml
+  loop: "{{ podman_auto_update_user_list }}"
+  loop_control:
+    loop_var: user
+    label: "{{ user.name }}"
+  vars:
+    podman_auto_update_user_home: "{{ getent_passwd[user.name][4] }}"
+    podman_auto_update_user_runtime_dir: "/run/user/{{ getent_passwd[user.name][1] }}"
+    podman_auto_update_user_dropin_dir: "{{ podman_auto_update_user_home }}/.config/systemd/user/{{ podman_auto_update_timer }}.d"
+    podman_auto_update_user_enabled: "{{ user.enabled | default(true) | bool }}"

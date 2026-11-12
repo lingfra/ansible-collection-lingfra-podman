@@ -1,0 +1,5 @@
+---
+# vars file for lingfra.podman.podman_auto_update
+
+podman_auto_update_timer: podman-auto-update.timer
+podman_auto_update_dropin_name: on-calendar.conf

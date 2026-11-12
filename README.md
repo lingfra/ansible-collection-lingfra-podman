@@ -31,6 +31,8 @@ caution!**
 
 ### Roles
 
+- [podman_auto_update](./roles/podman_auto_update/README.md): Manages the
+`podman-auto-update.timer` for the system and for users.
 - [podman_config](./roles/podman_config/README.md): Makes the necessary
 configuration to use Podman on a host.
 - [podman_construct](./roles/podman_construct/README.md): Deploys the Podman
@@ -42,6 +44,8 @@ systemd service to prune unused OCI images.
 
 ### Playbooks
 
+- [podman_auto_update](./playbooks/podman_auto_update.yaml): Runs role
+[podman_auto_update](./roles/podman_auto_update/README.md).
 - [podman_construct](./roles): Creates a target group for all hosts, which have
 `podman_construct_list` in their `hostvars` and runs the
 [podman_construct](./roles/podman_construct/README.md) role on that group. The

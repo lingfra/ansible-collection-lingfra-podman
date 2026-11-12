@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- podman_construct: Added service option `auto_update`, which sets `AutoUpdate=`
+  in the container quadlet
+- Added role podman_auto_update, which manages `podman-auto-update.timer` for
+  the system and for users, including an optional `OnCalendar=` override
+- Added playbook podman_auto_update
+
 ## [0.1.0] - 2025-02-02
 
 This version initializes the collection and implements a basic proof of concept
