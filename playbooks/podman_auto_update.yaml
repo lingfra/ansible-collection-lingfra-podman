@@ -1,0 +1,10 @@
+---
+- name: "Configure podman-auto-update systemd timer"
+  hosts: "{{ target | default('all') }}"
+  gather_facts: true
+  tags:
+    - podman_auto_update
+  tasks:
+    - name: "Import role lingfra.podman.podman_auto_update"
+      ansible.builtin.import_role:
+        name: lingfra.podman.podman_auto_update

@@ -1,0 +1,5 @@
+# Managed by Ansible role lingfra.podman.podman_auto_update
+[Timer]
+# Reset the Podman default before setting the new value
+OnCalendar=
+OnCalendar={{ podman_auto_update_dropin_on_calendar }}

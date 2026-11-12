@@ -1,0 +1,73 @@
+---
+# tasks file for lingfra.podman.podman_auto_update
+
+# ---------- Validation ----------
+
+# Without lingering, the user's systemd instance (and therefore the timer) only
+# runs while the user is logged in. Managing lingering is out of scope of this
+# role, but fail early with a clear message instead of a D-Bus error.
+- name: "Stat linger file of user {{ user.name }}"
+  ansible.builtin.stat:
+    path: "/var/lib/systemd/linger/{{ user.name }}"
+  register: podman_auto_update_user_linger
+
+- name: "Assert lingering is enabled for user {{ user.name }}"
+  ansible.builtin.assert:
+    that:
+      - podman_auto_update_user_linger.stat.exists
+    fail_msg: >-
+      Lingering is not enabled for user '{{ user.name }}'. The user's
+      podman-auto-update.timer requires a running systemd user instance.
+      Enable it, e.g. with 'loginctl enable-linger {{ user.name }}'.
+    quiet: true
+
+# ---------- Drop-in ----------
+
+- name: "Create podman-auto-update.timer drop-in directory for user {{ user.name }}"
+  ansible.builtin.file:
+    path: "{{ podman_auto_update_user_dropin_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+  become_user: "{{ user.name }}"
+  when:
+    - user.on_calendar is defined
+
+- name: "Template podman-auto-update.timer OnCalendar drop-in for user {{ user.name }}"
+  ansible.builtin.template:
+    src: on-calendar.conf.j2
+    dest: "{{ podman_auto_update_user_dropin_dir }}/{{ podman_auto_update_dropin_name }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ user.name }}"
+  register: podman_auto_update_user_dropin_present
+  vars:
+    podman_auto_update_dropin_on_calendar: "{{ user.on_calendar }}"
+  when:
+    - user.on_calendar is defined
+
+- name: "Remove podman-auto-update.timer OnCalendar drop-in for user {{ user.name }}"
+  ansible.builtin.file:
+    path: "{{ podman_auto_update_user_dropin_dir }}/{{ podman_auto_update_dropin_name }}"
+    state: absent
+  become: true
+  become_user: "{{ user.name }}"
+  register: podman_auto_update_user_dropin_absent
+  when:
+    - user.on_calendar is not defined
+
+# ---------- Timer ----------
+
+- name: "Manage podman-auto-update.timer for user {{ user.name }}"
+  ansible.builtin.systemd_service:
+    name: "{{ podman_auto_update_timer }}"
+    scope: user
+    daemon_reload: "{{ podman_auto_update_dropin_changed }}"
+    enabled: "{{ podman_auto_update_user_enabled }}"
+    state: "{{ ('restarted' if podman_auto_update_dropin_changed else 'started') if podman_auto_update_user_enabled else 'stopped' }}"
+  become: true
+  become_user: "{{ user.name }}"
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_auto_update_user_runtime_dir }}"
+  vars:
+    podman_auto_update_dropin_changed: "{{ podman_auto_update_user_dropin_present is changed or podman_auto_update_user_dropin_absent is changed }}"
