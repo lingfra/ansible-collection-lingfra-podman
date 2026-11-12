@@ -46,6 +46,7 @@
   ansible.builtin.set_fact:
     podman_construct_services_restart: "{{ podman_construct_services_restart + [podman_construct.name ~ '-pod.service'] }}"
   when:
+    - podman_construct.pod_restart_on_change | default(true) | bool
     - podman_construct_pod_quadlet is changed
 
 # ---------- Secrets ----------
