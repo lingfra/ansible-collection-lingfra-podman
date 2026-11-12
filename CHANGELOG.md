@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - podman_construct: Services are restarted when their container quadlet changes,
   which also starts them on the first deployment
 - podman_construct: Services are restarted when a secret they use changes
+- podman_construct: The pod of a construct is restarted when its quadlet changes
 
 ## [0.1.0] - 2025-02-02
 
