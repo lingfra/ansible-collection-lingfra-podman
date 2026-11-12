@@ -12,6 +12,7 @@ Not specified.
 This is the main entrypoint for the podman_construct role.
 Creates the quadlet files for the containerized components.
 Restarts a service after its container quadlet file changed, which also starts it on the first deployment.
+Services are also restarted when one of their secrets changed, because Podman passes secrets to the container when it is created.
 
 ### Options for `main`
 
