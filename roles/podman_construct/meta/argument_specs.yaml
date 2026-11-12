@@ -7,6 +7,10 @@ argument_specs:
     description:
       - "This is the main entrypoint for the podman_construct role."
       - "Creates the quadlet files for the containerized components."
+      - "Restarts a service after its container quadlet file changed, which also starts it on the first deployment."
+      - "Services are also restarted when one of their secrets changed, because Podman passes secrets to the container when it is created."
+      - "A pod is restarted after its quadlet file changed, which restarts all containers in the pod."
+      - "The restarts can be disabled per unit with `restart_on_change` for a service and `pod_restart_on_change` for a pod."
     author:
       - "Stella Kemmerling"
     options:
@@ -53,6 +57,13 @@ argument_specs:
             description:
               - "Whether the services (containers) should be placed in a pod or not."
               - "If not placed in a pod, a network will be created."
+          pod_restart_on_change:
+            type: "bool"
+            required: false
+            default: true
+            description:
+              - "Whether the pod unit is restarted after its quadlet file changed."
+              - "Restarting the pod also restarts all containers in it, regardless of their `restart_on_change` option."
           secrets:
             type: "dict"
             required: false
@@ -301,6 +312,15 @@ argument_specs:
                   - "on-watchdog"
                 description:
                   - "Policy for restarting the service on exit. Takes the systemd service options, see **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#Restart=)**."
+              restart_on_change:
+                type: "bool"
+                required: false
+                default: true
+                description:
+                  - "Whether the service is restarted after its container quadlet file or one of its secrets changed."
+                  - "Set it to `false` to apply changes at a time of your choice, e. g. for a database."
+                  - "A new service is then not started until the next boot or a manual start."
+                  - "The service can still be restarted by systemd through its dependencies, e. g. when its pod or a unit it depends on is restarted."
               secrets:
                 type: "list"
                 elements: "dict"
