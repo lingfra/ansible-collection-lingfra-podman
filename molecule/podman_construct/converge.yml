@@ -52,6 +52,10 @@
 
           - name: db
             image: docker.io/library/postgres:17
+            # Docker official images rebuild existing tags for security fixes.
+            # podman-auto-update.timer pulls the new digest and restarts the
+            # service.
+            auto_update: registry
             restart: always
             volumes:
               - src: pgdata

@@ -62,6 +62,12 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
 ### Options for `main` > `podman_construct_list` > `services`
 
+- `auto_update` (Type: `str`, optional).
+
+  Enables automatic updates of the container image with `podman auto-update`. `registry` pulls the image when the registry digest of the configured tag differs from the local one. It requires a fully qualified image name. `local` only restarts the container when the image in local storage was updated, e. g. by a manual pull or build. The updates run through the `podman-auto-update.timer`, which is managed by the `podman_auto_update` role. Combine it with `notify: healthy`, so `podman auto-update` rolls back to the previous image if the new container never becomes healthy. Refer to [**podman-auto-update(1)**](https://docs.podman.io/en/latest/markdown/podman-auto-update.1.html) for more information.
+
+  _Choices:_ `registry`, `local`
+
 - `cap_add` (Type: list of `str`, optional).
 
 - `cap_drop` (Type: list of `str`, optional).

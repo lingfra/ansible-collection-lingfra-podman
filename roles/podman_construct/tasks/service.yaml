@@ -155,7 +155,9 @@
     pod: "{{ podman_construct_pod if podman_construct_pod is defined else omit }}"
     publish: "{{ service.publish | default(omit) }}"
     pull: "{{ service.pull | default('newer') }}"
-    quadlet_options: "{{ podman_construct_container_systemd_options }}"
+    # Pass a list instead of a string: Ansible would split a string on commas.
+    # Entries without a section header land in the [Container] section.
+    quadlet_options: "{{ [service_auto_update, podman_construct_container_systemd_options] | select | list }}"
     sdnotify: "{{ service.notify | string | lower if service.notify is defined else omit }}"
     secrets: "{{ service_secrets if service_secrets is defined else omit }}"
     user: "{{ service.user | default(omit) }}"
@@ -164,6 +166,8 @@
   become: true
   notify:
     - "Systemd daemon reload"
+  vars:
+    service_auto_update: "{{ ('AutoUpdate=' ~ service.auto_update) if service.auto_update is defined else '' }}"
 
 # ---------- Clean-Up ----------
 
