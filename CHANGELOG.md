@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added role podman_auto_update, which manages `podman-auto-update.timer` for
   the system and for users, including an optional `OnCalendar=` override
 - Added playbook podman_auto_update
+- podman_construct: Fixed named volumes, which failed with an undefined
+  variable error
 
 ## [0.1.0] - 2025-02-02
 
