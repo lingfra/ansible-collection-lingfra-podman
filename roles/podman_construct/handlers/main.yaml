@@ -7,3 +7,17 @@
   become: true
   tags:
     - podman_construct
+
+# Must stay below "Systemd daemon reload": handlers run in the order they are
+# defined, and systemd needs to regenerate the units from the quadlet files
+# before they are restarted.
+- name: "Restart changed services"
+  ansible.builtin.systemd_service:
+    name: "{{ unit }}"
+    state: restarted
+  become: true
+  loop: "{{ podman_construct_services_restart | unique }}"
+  loop_control:
+    loop_var: unit
+  tags:
+    - podman_construct
