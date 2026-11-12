@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added playbook podman_auto_update
 - podman_construct: Fixed named volumes, which failed with an undefined
   variable error
+- podman_construct: Services are restarted when their container quadlet changes,
+  which also starts them on the first deployment
 
 ## [0.1.0] - 2025-02-02
 
