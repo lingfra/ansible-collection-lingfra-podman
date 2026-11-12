@@ -178,10 +178,12 @@
 - name: "Add service to podman_construct_services_restart for '{{ service_name_full }}'"  # noqa: no-handler
   ansible.builtin.set_fact:
     podman_construct_services_restart: "{{ podman_construct_services_restart + [service_name_full ~ '.service'] }}"
-  when: >-
-    podman_construct_service_quadlet is changed or
-    service.secrets | default([]) | map(attribute='name')
-    | intersect(podman_construct_secrets_changed) | length > 0
+  when:
+    - service.restart_on_change | default(true) | bool
+    - >-
+      podman_construct_service_quadlet is changed or
+      service.secrets | default([]) | map(attribute='name')
+      | intersect(podman_construct_secrets_changed) | length > 0
 
 # ---------- Clean-Up ----------
 
