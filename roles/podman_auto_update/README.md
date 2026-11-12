@@ -19,9 +19,9 @@ The timer is restarted when its drop-in changes.
 
 #### `podman_auto_update_enabled`
 
-Type: `bool`, Default: `True`.
+Type: `bool`, Default: `False`.
 
-Whether the system `podman-auto-update.timer` is enabled and started. Set this option to `false` to disable and stop the timer.
+Whether the system `podman-auto-update.timer` is enabled and started. When `false`, the timer is disabled and stopped. Hosts without the timer unit (e. g. without Podman) are skipped, so the role can be applied to the whole inventory.
 
 #### `podman_auto_update_on_calendar`
 
@@ -60,6 +60,7 @@ A list of users for which the user `podman-auto-update.timer` is managed. Linger
         name: lingfra.podman.podman_auto_update
       vars:
         # update rootful containers every night at 04:00
+        podman_auto_update_enabled: true
         podman_auto_update_on_calendar: "*-*-* 04:00:00"
         podman_auto_update_user_list:
           # rootless containers of alice, Podman default schedule

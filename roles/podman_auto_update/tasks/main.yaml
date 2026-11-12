@@ -56,15 +56,33 @@
   when:
     - podman_auto_update_on_calendar is not defined
 
+# Disabling a missing unit fails. Skip hosts without Podman, so the role can be
+# applied to the whole inventory.
+- name: "Check if system podman-auto-update.timer exists"
+  ansible.builtin.command:
+    argv:
+      - systemctl
+      - list-unit-files
+      - --no-legend
+      - "{{ podman_auto_update_timer }}"
+  register: podman_auto_update_system_unit
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when:
+    - not podman_auto_update_enabled | bool
+
 - name: "Manage system podman-auto-update.timer"
   ansible.builtin.systemd_service:
     name: "{{ podman_auto_update_timer }}"
     daemon_reload: "{{ podman_auto_update_dropin_changed }}"
-    enabled: "{{ podman_auto_update_enabled }}"
-    state: "{{ ('restarted' if podman_auto_update_dropin_changed else 'started') if podman_auto_update_enabled else 'stopped' }}"
+    enabled: "{{ podman_auto_update_enabled | bool }}"
+    state: "{{ ('restarted' if podman_auto_update_dropin_changed else 'started') if podman_auto_update_enabled | bool else 'stopped' }}"
   become: true
   vars:
     podman_auto_update_dropin_changed: "{{ podman_auto_update_system_dropin_present is changed or podman_auto_update_system_dropin_absent is changed }}"
+  when:
+    - podman_auto_update_enabled | bool or podman_auto_update_system_unit.stdout | length > 0
 
 # ---------- Users ----------
 
@@ -85,4 +103,4 @@
     podman_auto_update_user_home: "{{ getent_passwd[user.name][4] }}"
     podman_auto_update_user_runtime_dir: "/run/user/{{ getent_passwd[user.name][1] }}"
     podman_auto_update_user_dropin_dir: "{{ podman_auto_update_user_home }}/.config/systemd/user/{{ podman_auto_update_timer }}.d"
-    podman_auto_update_user_enabled: "{{ user.enabled | default(true) }}"
+    podman_auto_update_user_enabled: "{{ user.enabled | default(true) | bool }}"
