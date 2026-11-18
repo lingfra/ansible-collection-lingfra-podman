@@ -19,5 +19,7 @@
   loop: "{{ podman_construct_services_restart | unique }}"
   loop_control:
     loop_var: unit
+  when:
+    - podman_construct_restart_on_change | bool
   tags:
     - podman_construct

@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - podman_construct: The pod of a construct is restarted when its quadlet changes
 - podman_construct: Added the options `restart_on_change` for services and
   `pod_restart_on_change` for constructs to disable these restarts per unit
+- podman_construct: Added the variable `podman_construct_restart_on_change` to
+  disable these restarts for all units, e. g. during maintenance
 
 ## [0.1.0] - 2025-02-02
 

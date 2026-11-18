@@ -15,6 +15,7 @@ Restarts a service after its container quadlet file changed, which also starts i
 Services are also restarted when one of their secrets changed, because Podman passes secrets to the container when it is created.
 A pod is restarted after its quadlet file changed, which restarts all containers in the pod.
 The restarts can be disabled per unit with `restart_on_change` for a service and `pod_restart_on_change` for a pod.
+Set `podman_construct_restart_on_change` to `false` to disable them for all units.
 
 ### Options for `main`
 
@@ -23,6 +24,12 @@ The restarts can be disabled per unit with `restart_on_change` for a service and
 Type: list of dicts of `podman_construct_list` [options](#options-for-main--podman_construct_list), **required**.
 
 Specifies the configuration for the containers to be created.
+
+#### `podman_construct_restart_on_change`
+
+Type: `bool`, Default: `True`.
+
+Whether units are restarted after their quadlet file or secrets changed. When `false`, no unit is restarted or started by this role, regardless of `restart_on_change` and `pod_restart_on_change`. The changes apply at the next restart of the units, e. g. in a maintenance window where the host is rebooted anyway.
 
 #### `podman_construct_network_list`
 

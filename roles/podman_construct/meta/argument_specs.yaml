@@ -11,6 +11,7 @@ argument_specs:
       - "Services are also restarted when one of their secrets changed, because Podman passes secrets to the container when it is created."
       - "A pod is restarted after its quadlet file changed, which restarts all containers in the pod."
       - "The restarts can be disabled per unit with `restart_on_change` for a service and `pod_restart_on_change` for a pod."
+      - "Set `podman_construct_restart_on_change` to `false` to disable them for all units."
     author:
       - "Stella Kemmerling"
     options:
@@ -386,6 +387,14 @@ argument_specs:
                     required: false
                     description:
                       - "If this is a bind volume and the folder is non-existing, the newly created folder will have this mode. Does not modify existing folders."
+
+      podman_construct_restart_on_change:
+        type: "bool"
+        default: true
+        description:
+          - "Whether units are restarted after their quadlet file or secrets changed."
+          - "When `false`, no unit is restarted or started by this role, regardless of `restart_on_change` and `pod_restart_on_change`."
+          - "The changes apply at the next restart of the units, e. g. in a maintenance window where the host is rebooted anyway."
 
       podman_construct_network_list:
         type: "list"
