@@ -27,6 +27,10 @@
     name: "{{ podman_construct.name }}"
     state: quadlet
   become: true
+  notify:
+    - "Systemd daemon reload"
+    - "Restart changed services"
+  register: podman_construct_pod_quadlet
   when:
     - podman_construct.pod | default(false)
 
@@ -36,6 +40,15 @@
   when:
     - podman_construct.pod | default(false)
 
+# Quadlet names the unit of <name>.pod <name>-pod.service. The containers of
+# the pod are bound to it and restart together with it.
+- name: "Add pod to podman_construct_services_restart for '{{ podman_construct.name }}'"  # noqa: no-handler
+  ansible.builtin.set_fact:
+    podman_construct_services_restart: "{{ podman_construct_services_restart + [podman_construct.name ~ '-pod.service'] }}"
+  when:
+    - podman_construct.pod_restart_on_change | default(true) | bool
+    - podman_construct_pod_quadlet is changed
+
 # ---------- Secrets ----------
 
 - name: "Create secrets for construct '{{ podman_construct.name }}'"
@@ -44,6 +57,9 @@
     name: "{{ secret_full_name }}"
     data: "{{ podman_construct.secrets[secret_name] }}"
   become: true
+  notify:
+    - "Restart changed services"
+  register: podman_construct_secrets_result
   loop: "{{ podman_construct.secrets.keys() }}"
   loop_control:
     loop_var: secret_name
@@ -52,6 +68,13 @@
     secret_full_name: "{{ (podman_construct.name, secret_name) | join('-') }}"
   when:
     - "'secrets' in podman_construct.keys()"
+
+# Podman passes secrets to the container when it is created, so services using
+# a changed secret have to be restarted (see service.yaml).
+- name: "Set fact podman_construct_secrets_changed"
+  ansible.builtin.set_fact:
+    podman_construct_secrets_changed: "{{ podman_construct_secrets_result.results | default([])
+      | selectattr('changed') | map(attribute='secret_name') | list }}"
 
 - name: "Set fact podman_construct_secrets"
   ansible.builtin.set_fact:
@@ -81,3 +104,4 @@
     podman_construct_networks: null
     podman_construct_pod: null
     podman_construct_secrets: null
+    podman_construct_secrets_changed: null

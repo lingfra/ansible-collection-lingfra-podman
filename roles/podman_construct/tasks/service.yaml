@@ -166,8 +166,24 @@
   become: true
   notify:
     - "Systemd daemon reload"
+    - "Restart changed services"
+  register: podman_construct_service_quadlet
   vars:
     service_auto_update: "{{ ('AutoUpdate=' ~ service.auto_update) if service.auto_update is defined else '' }}"
+
+# ---------- Restart ----------
+
+# Not a handler: the unit name is only known in this loop iteration. The
+# handler "Restart changed services" restarts the collected units.
+- name: "Add service to podman_construct_services_restart for '{{ service_name_full }}'"  # noqa: no-handler
+  ansible.builtin.set_fact:
+    podman_construct_services_restart: "{{ podman_construct_services_restart + [service_name_full ~ '.service'] }}"
+  when:
+    - service.restart_on_change | default(true) | bool
+    - >-
+      podman_construct_service_quadlet is changed or
+      service.secrets | default([]) | map(attribute='name')
+      | intersect(podman_construct_secrets_changed) | length > 0
 
 # ---------- Clean-Up ----------
 
