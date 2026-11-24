@@ -32,8 +32,8 @@
 - name: "Set fact service_systemd_options for '{{ service_name_full }}'"
   ansible.builtin.set_fact:
     service_systemd_options:
-      Service:
-        Restart: "{{ service.restart | default('no') }}"
+      Service: "{{ {'Restart': service.restart | default('no')}
+                   | ansible.builtin.combine({'TimeoutStartSec': service.timeout_start} if service.timeout_start is defined else {}) }}"
       Install:
         WantedBy: "{{ service.install | default('default.target') }}"
 
