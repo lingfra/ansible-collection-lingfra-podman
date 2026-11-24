@@ -91,6 +91,8 @@ argument_specs:
                   - "`local` only restarts the container when the image in local storage was updated, e. g. by a manual pull or build."
                   - "The updates run through the `podman-auto-update.timer`, which is managed by the `podman_auto_update` role."
                   - "Combine it with `notify: healthy`, so `podman auto-update` rolls back to the previous image if the new container never becomes healthy."
+                  - "Set `timeout_start` if the new version may need longer than the systemd start timeout to become healthy, e. g. for database migrations."
+                  - "Otherwise the update counts as failed and is rolled back."
                   - "Refer to [**podman-auto-update(1)**](https://docs.podman.io/en/latest/markdown/podman-auto-update.1.html) for more information."
               cap_add:
                 type: "list"
@@ -283,6 +285,7 @@ argument_specs:
                   - "`true` lets the application inside the container send the notification itself (requires sd_notify support)."
                   - "`healthy` delays the notification until the container is marked healthy (requires `healthcheck.cmd`)."
                   - "Defaults to `false`, where the service is started once the container runtime starts the container."
+                  - "The unit has to reach the started state within `timeout_start`, so raise it for containers that take long to become healthy."
                   - "Refer to [**podman-systemd.unit(5)**](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) for more information."
               pod:
                 type: "str"
@@ -339,6 +342,19 @@ argument_specs:
                     required: true
                     description:
                       - "Name of the environment variable inside the container, which should contain the secret."
+              timeout_start:
+                type: "str"
+                required: false
+                description:
+                  - "Time the service may take to start."
+                  - "Sets `TimeoutStartSec=` in the `[Service]` section of the container quadlet."
+                  - "Takes a [systemd time span](https://www.freedesktop.org/software/systemd/man/latest/systemd.time.html),"
+                  - "e. g. `300`, `10min` or `infinity`."
+                  - "If the service is not started within this time, systemd stops it and marks the start as failed."
+                  - "With `notify: healthy` the time until the container is healthy counts against the timeout."
+                  - "With the default `pull: newer` the image pull does as well."
+                  - "If unset, the systemd default `DefaultTimeoutStartSec=` applies (90 seconds unless changed)."
+                  - "See **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#TimeoutStartSec=)**."
               user:
                 type: "str"
                 required: false

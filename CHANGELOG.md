@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `pod_restart_on_change` for constructs to disable these restarts per unit
 - podman_construct: Added the variable `podman_construct_restart_on_change` to
   disable these restarts for all units, e. g. during maintenance
+- podman_construct: Added service option `timeout_start`, which sets
+  `TimeoutStartSec=` in the container quadlet
 
 ## [0.1.0] - 2025-02-02
 

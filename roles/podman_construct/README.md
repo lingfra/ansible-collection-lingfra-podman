@@ -79,7 +79,7 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
 - `auto_update` (Type: `str`, optional).
 
-  Enables automatic updates of the container image with `podman auto-update`. `registry` pulls the image when the registry digest of the configured tag differs from the local one. It requires a fully qualified image name. `local` only restarts the container when the image in local storage was updated, e. g. by a manual pull or build. The updates run through the `podman-auto-update.timer`, which is managed by the `podman_auto_update` role. Combine it with `notify: healthy`, so `podman auto-update` rolls back to the previous image if the new container never becomes healthy. Refer to [**podman-auto-update(1)**](https://docs.podman.io/en/latest/markdown/podman-auto-update.1.html) for more information.
+  Enables automatic updates of the container image with `podman auto-update`. `registry` pulls the image when the registry digest of the configured tag differs from the local one. It requires a fully qualified image name. `local` only restarts the container when the image in local storage was updated, e. g. by a manual pull or build. The updates run through the `podman-auto-update.timer`, which is managed by the `podman_auto_update` role. Combine it with `notify: healthy`, so `podman auto-update` rolls back to the previous image if the new container never becomes healthy. Set `timeout_start` if the new version may need longer than the systemd start timeout to become healthy, e. g. for database migrations. Otherwise the update counts as failed and is rolled back. Refer to [**podman-auto-update(1)**](https://docs.podman.io/en/latest/markdown/podman-auto-update.1.html) for more information.
 
   _Choices:_ `registry`, `local`
 
@@ -129,7 +129,7 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 
 - `notify` (Type: `str`, optional).
 
-  How systemd startup notifications are handled for the container. `true` lets the application inside the container send the notification itself (requires sd_notify support). `healthy` delays the notification until the container is marked healthy (requires `healthcheck.cmd`). Defaults to `false`, where the service is started once the container runtime starts the container. Refer to [**podman-systemd.unit(5)**](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) for more information.
+  How systemd startup notifications are handled for the container. `true` lets the application inside the container send the notification itself (requires sd_notify support). `healthy` delays the notification until the container is marked healthy (requires `healthcheck.cmd`). Defaults to `false`, where the service is started once the container runtime starts the container. The unit has to reach the started state within `timeout_start`, so raise it for containers that take long to become healthy. Refer to [**podman-systemd.unit(5)**](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) for more information.
 
   _Choices:_ `true`, `false`, `healthy`
 
@@ -158,6 +158,10 @@ A list of servive unrelated networks to create. Most options are passthroughed t
 - `secrets` (Type: list of dicts of `secrets` [options](#options-for-main--podman_construct_list--services--secrets), optional).
 
   Secrets the container should get access to.
+
+- `timeout_start` (Type: `str`, optional).
+
+  Time the service may take to start. Sets `TimeoutStartSec=` in the `[Service]` section of the container quadlet. Takes a [systemd time span](https://www.freedesktop.org/software/systemd/man/latest/systemd.time.html), e. g. `300`, `10min` or `infinity`. If the service is not started within this time, systemd stops it and marks the start as failed. With `notify: healthy` the time until the container is healthy counts against the timeout. With the default `pull: newer` the image pull does as well. If unset, the systemd default `DefaultTimeoutStartSec=` applies (90 seconds unless changed). See **[systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#TimeoutStartSec=)**.
 
 - `user` (Type: `str`, optional).
 
